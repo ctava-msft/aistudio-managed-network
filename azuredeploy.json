@@ -15,7 +15,7 @@
     }
   },
   "variables": {
-    "aiHubName": "[format('aih-{0}', variables('uniqueSuffix'))]",
+    "aiHubName": "[format('aih{0}', variables('uniqueSuffix'))]",
     "aiSerivcesName": "[format('ais-{0}', variables('uniqueSuffix'))]",
     "computeName": "[format('ci-{0}', variables('uniqueSuffix'))]",
     "keyVaultName": "[format('kv-{0}', variables('uniqueSuffix'))]",
