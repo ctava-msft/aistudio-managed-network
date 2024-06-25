@@ -15,7 +15,6 @@
     }
   },
   "variables": {
-    "aiHubName": "[format('aih{0}', variables('uniqueSuffix'))]",
     "aiSerivcesName": "[format('ais-{0}', variables('uniqueSuffix'))]",
     "computeName": "[format('ci-{0}', variables('uniqueSuffix'))]",
     "keyVaultName": "[format('kv-{0}', variables('uniqueSuffix'))]",
@@ -119,22 +118,22 @@
     {
       "type": "Microsoft.MachineLearningServices/workspaces/connections",
       "apiVersion": "2023-06-01-preview",
-      "name": "[format('{0}/{1}', variables('aiHubName'), format('{0}-connection-AzureOpenAI', variables('aiHubName')))]",
+      "name": "[format('{0}/{1}', variables('workspaceName'), format('{0}-connection-AzureOpenAI', variables('workspaceName')))]",
       "properties": {
         "category": "AzureOpenAI",
-        "target": "[resourceId('Microsoft.CognitiveServices/accounts', variables('aiHubName'))]",
+        "target": "[resourceId('Microsoft.CognitiveServices/accounts', variables('workspaceName'))]",
         "authType": "ApiKey",
         "isSharedToAll": true,
         "credentials": {
-          "key": "[format('{0}', listKeys(variables('aiHubName'), '2021-10-01').key1)]"
+          "key": "[format('{0}', listKeys(variables('workspaceName'), '2021-10-01').key1)]"
         },
         "metadata": {
           "ApiType": "Azure",
-          "ResourceId": "[resourceId('Microsoft.CognitiveServices/accounts', variables('aiHubName'))]"
+          "ResourceId": "[resourceId('Microsoft.CognitiveServices/accounts', variables('workspaceName'))]"
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.MachineLearningServices/workspaces', variables('aiHubName'))]"
+        "[resourceId('Microsoft.MachineLearningServices/workspaces', variables('workspaceName'))]"
       ]
     }
   ],
