@@ -136,7 +136,7 @@
       ],
       "properties": {
         "sourceResourceId": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
-        "targetResourceId": "[resourceId('Microsoft.MachineLearningServices/workspaces', variables('workspaceName'))]",
+        "targetResourceId": "[resourceId('Microsoft.MachineLearningServices/workspaces', variables('workspaceName'))]"
       }
     },
     {
