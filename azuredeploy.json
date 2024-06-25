@@ -21,7 +21,7 @@
     "location" : "[resourceGroup().location]",
     "storageAccountName": "[format('sa{0}', variables('uniqueSuffix'))]",
     "tenantId": "[subscription().tenantId]",
-    "uniqueSuffix": "[substring(uniqueString(resourceGroup().id), 0, 4)]",
+    "uniqueSuffix": "[substring(uniqueString(resourceGroup().id), 0, 3)]",
     "workspaceName" : "[format('w-{0}', variables('uniqueSuffix'))]"
   },
   "resources": [
