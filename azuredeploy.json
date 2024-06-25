@@ -126,20 +126,6 @@
     }
     },
     {
-      "type": "Microsoft.Resources/connections",
-      "apiVersion": "2021-04-01",
-      "name": "storageToWorkspaceConnection",
-      "location": "[resourceGroup().location]",
-      "dependsOn": [
-        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
-        "[resourceId('Microsoft.MachineLearningServices/workspaces', variables('workspaceName'))]"
-      ],
-      "properties": {
-        "sourceResourceId": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
-        "targetResourceId": "[resourceId('Microsoft.MachineLearningServices/workspaces', variables('workspaceName'))]"
-      }
-    },
-    {
       "type": "Microsoft.MachineLearningServices/workspaces/connections",
       "apiVersion": "2023-06-01-preview",
       "name": "[format('{0}/{1}', variables('workspaceName'), format('{0}-connection-AzureOpenAI', variables('workspaceName')))]",
