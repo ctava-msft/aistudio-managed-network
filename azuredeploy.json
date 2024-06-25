@@ -125,7 +125,7 @@
         "authType": "ApiKey",
         "isSharedToAll": true,
         "credentials": {
-          "key": "[format('{0}', listKeys(variables('workspaceName'), '2021-10-01').key1)]"
+          "key": "[format('{0}', listKeys(resourceId('Microsoft.CognitiveServices/accounts', variables('workspaceName')), '2021-10-01').key1)]"
         },
         "metadata": {
           "ApiType": "Azure",
