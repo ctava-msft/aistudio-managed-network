@@ -133,7 +133,8 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.MachineLearningServices/workspaces', variables('workspaceName'))]"
+        "[resourceId('Microsoft.MachineLearningServices/workspaces', variables('workspaceName'))]",
+        "[resourceId('Microsoft.CognitiveServices/accounts', variables('workspaceName'))]"
       ]
     }
   ],
