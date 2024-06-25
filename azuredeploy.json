@@ -15,7 +15,7 @@
     }
   },
   "variables": {
-    "aiSerivcesName": "[format('ais-{0}', variables('uniqueSuffix'))]",
+    "aiServicesName": "[format('ais-{0}', variables('uniqueSuffix'))]",
     "computeName": "[format('ci-{0}', variables('uniqueSuffix'))]",
     "keyVaultName": "[format('kv-{0}', variables('uniqueSuffix'))]",
     "location" : "[resourceGroup().location]",
@@ -103,7 +103,7 @@
     {
     "type": "Microsoft.CognitiveServices/accounts",
     "apiVersion": "2021-10-01",
-    "name": "[variables('aiSerivcesName')]",
+    "name": "[variables('aiServicesName')]",
     "location": "[variables('location')]",
     "sku": {
       "name": "S0"
@@ -121,20 +121,20 @@
       "name": "[format('{0}/{1}', variables('workspaceName'), format('{0}-connection-AzureOpenAI', variables('workspaceName')))]",
       "properties": {
         "category": "AzureOpenAI",
-        "target": "[resourceId('Microsoft.CognitiveServices/accounts', variables('workspaceName'))]",
+        "target": "[resourceId('Microsoft.CognitiveServices/accounts', variables('aiServicesName'))]",
         "authType": "ApiKey",
         "isSharedToAll": true,
         "credentials": {
-          "key": "[format('{0}', listKeys(resourceId('Microsoft.CognitiveServices/accounts', variables('workspaceName')), '2021-10-01').key1)]"
+          "key": "[format('{0}', listKeys(resourceId('Microsoft.CognitiveServices/accounts', variables('aiServicesName')), '2021-10-01').key1)]"
         },
         "metadata": {
           "ApiType": "Azure",
-          "ResourceId": "[resourceId('Microsoft.CognitiveServices/accounts', variables('workspaceName'))]"
+          "ResourceId": "[resourceId('Microsoft.CognitiveServices/accounts', variables('aiServicesName'))]"
         }
       },
       "dependsOn": [
         "[resourceId('Microsoft.MachineLearningServices/workspaces', variables('workspaceName'))]",
-        "[resourceId('Microsoft.CognitiveServices/accounts', variables('aiSerivcesName'))]"
+        "[resourceId('Microsoft.CognitiveServices/accounts', variables('aiServicesName'))]"
       ]
     }
   ],
