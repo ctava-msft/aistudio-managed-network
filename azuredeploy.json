@@ -89,7 +89,7 @@
         "publicNetworkAccess": "Disabled",
         "managedNetwork": {
           "isolationMode": "AllowInternetOutBound"
-        },
+        }
       },
       "dependsOn": [
         "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]",
