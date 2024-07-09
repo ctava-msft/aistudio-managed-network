@@ -87,7 +87,18 @@
         "keyVault": "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]",
         "storageAccount": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
         "managedNetwork": {
-          "isolation_mode": "IsolationMode.DISABLED"
+          /**
+           * Specifies the isolation mode for the resource.
+           *
+           * The available isolation modes are:
+           * - IsolationMode.DISABLED: Disables isolation for the resource.
+           * - IsolationMode.SERVICE: Enables service-level isolation for the resource.
+           * - IsolationMode.VNET: Enables virtual network-level isolation for the resource.
+           * - IsolationMode.SUBNET: Enables subnet-level isolation for the resource.
+           *
+           * The default isolation mode is IsolationMode.DISABLED.
+           */
+          "isolation_mode": "IsolationMode.VNET"
         }
       },
       "dependsOn": [
