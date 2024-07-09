@@ -19,6 +19,7 @@
     "computeName": "[format('ci-{0}', variables('uniqueSuffix'))]",
     "keyVaultName": "[format('kv-{0}', variables('uniqueSuffix'))]",
     "location" : "[resourceGroup().location]",
+    "notebookName" : "[format('n-{0}', variables('uniqueSuffix'))]",
     "storageAccountName": "[format('sa{0}', variables('uniqueSuffix'))]",
     "storageContainerName": "[format('sc{0}', variables('uniqueSuffix'))]",
     "tenantId": "[subscription().tenantId]",
@@ -109,6 +110,21 @@
       "dependsOn": [
         "[resourceId('Microsoft.MachineLearningServices/workspaces', variables('workspaceName'))]"
       ]
+    },
+    {
+      "type": "Microsoft.MachineLearningServices/workspaces/notebooks",
+      "apiVersion": "2021-03-01-preview",
+      "name": "[concat(variables('workspaceName'), '/', variables('notebookName'))]",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[resourceId('Microsoft.MachineLearningServices/workspaces/computes', variables('workspaceName'), variables('computeName'))]"
+      ],
+      "properties": {
+        "compute": "[concat(variables('workspaceName'), '/', variables('computeName'))]",
+        "kernelSpec": {
+          "name": "python3"
+        }
+      }
     },
     {
     "type": "Microsoft.CognitiveServices/accounts",
