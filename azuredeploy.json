@@ -86,9 +86,10 @@
         "friendlyName": "[variables('workspaceName')]",
         "keyVault": "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]",
         "storageAccount": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
+        "publicNetworkAccess": "Disabled",
         "managedNetwork": {
-          "isolation_mode": "IsolationMode.ALLOw_ONLY_APPROVED_OUTBOUND"
-        }
+          "isolationMode": "AllowInternetOutBound"
+        },
       },
       "dependsOn": [
         "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]",
