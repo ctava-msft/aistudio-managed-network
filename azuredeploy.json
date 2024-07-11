@@ -205,32 +205,38 @@
     {
       "type": "Microsoft.Network/privateDnsZones",
       "apiVersion": "2018-09-01",
-      "name": "[variables('privateLinkName')]",
+      "name": "[concat(variables('privateLinkNotebookName'), '.privatelink.notebooks.azure.net')]",
       "location": "global",
       "tags": {},
-      "properties": {}
+      "properties": {},
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
+      ]
     },
     {
       "type": "Microsoft.Network/privateDnsZones",
       "apiVersion": "2018-09-01",
-      "name": "[variables('privateLinkName')]",
+      "name": "[concat(variables('privateLinkName'), '.privatelink.default')]",
       "location": "global",
       "tags": {},
-      "properties": {}
+      "properties": {},
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
+      ]
     },
     {
       "type": "Microsoft.Network/privateDnsZones",
       "apiVersion": "2018-09-01",
-      "name": "[variables('privateDNSName')]",
+      "name": "[concat(variables('privateLinkNotebookName'), '.default')]",
       "location": "global",
       "properties": {
         "virtualNetwork": {
-          "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'), 'default')]"
+          "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
         },
         "registrationEnabled": false
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/privateDnsZones', variables('privateLinkName'))]"
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
       ]
     },
     {
@@ -240,43 +246,41 @@
       "location": "global",
       "properties": {
         "virtualNetwork": {
-          "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'), 'default')]"
+          "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
         },
         "registrationEnabled": false
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/privateDnsZones', variables('privateLinkNotebookName'), 'default')]",
-        "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'), 'default')]"
+        "[resourceId('Microsoft.Network/privateDnsZones', variables('privateLinkNotebookName'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
       ]
     },
     {
-      "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
-      "apiVersion": "2023-04-01",
-      "name": "[format('{0}/{1}', variables('privateEndpointName'), 'default')]",
-      "properties": {
-        "privateDnsZoneConfigs": [
-          {
-            "name": "privatelink-api-azureml-ms",
-            "properties": {
-              "privateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', variables('privateLinkName'))]"
-            }
-          },
-          {
-            "name": "privatelink-notebooks-azure-net",
-            "properties": {
-              "privateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', variables('privateLinkNotebookName'))]"
-            }
+    "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
+    "apiVersion": "2023-04-01",
+    "name": "[format('{0}/{1}', variables('privateEndpointName'), 'default')]",
+    "properties": {
+      "privateDnsZoneConfigs": [
+        {
+          "name": "privatelink-api-azureml-ms",
+          "properties": {
+            "privateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', concat(variables('privateLinkName'), '.privatelink.azureml.ms'))]"
           }
-        ]
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.Network/privateEndpoints', variables('privateEndpointName'))]",
-        "[resourceId('Microsoft.Network/privateDnsZones', variables('privateLinkName'))]",
-        "[resourceId('Microsoft.Network/privateDnsZones', variables('privateLinkNotebookName'))]",
-        "[resourceId('Microsoft.Network/privateDnsZones/virtualNetworkLinks', variables('privateLinkAPIName'))]",
-        "[resourceId('Microsoft.Network/privateDnsZones/virtualNetworkLinks', variables('privateLinkNotebookName'))]"
+        },
+        {
+          "name": "privatelink-notebooks-azure-net",
+          "properties": {
+            "privateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', concat(variables('privateLinkNotebookName'), '.privatelink.notebooks.azure.net'))]"
+          }
+        }
       ]
-    }
+    },
+    "dependsOn": [
+      "[resourceId('Microsoft.Network/privateEndpoints', variables('privateEndpointName'))]",
+      "[resourceId('Microsoft.Network/privateDnsZones', concat(variables('privateLinkName'), '.privatelink.azureml.ms'))]",
+      "[resourceId('Microsoft.Network/privateDnsZones', concat(variables('privateLinkNotebookName'), '.privatelink.notebooks.azure.net'))]"
+    ]
+  }
   ],
   "outputs": {
   }
