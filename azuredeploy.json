@@ -216,7 +216,7 @@
     {
       "type": "Microsoft.Network/privateDnsZones",
       "apiVersion": "2018-09-01",
-      "name": "[concat(variables('privateLinkName'), '.privatelink.default')]",
+      "name": "[concat(variables('privateLinkName'), '.privatelink.azureml.ms')]",
       "location": "global",
       "tags": {},
       "properties": {},
@@ -225,24 +225,9 @@
       ]
     },
     {
-      "type": "Microsoft.Network/privateDnsZones",
-      "apiVersion": "2018-09-01",
-      "name": "[concat(variables('privateLinkNotebookName'), '.default')]",
-      "location": "global",
-      "properties": {
-        "virtualNetwork": {
-          "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
-        },
-        "registrationEnabled": false
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
-      ]
-    },
-    {
       "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
       "apiVersion": "2018-09-01",
-      "name": "[format('{0}/{1}', variables('privateLinkNotebookName'), 'default')]",
+      "name": "[format('{0}/{1}', variables('privateLinkNotebookName'), '.privatelink.notebooks.azure.net')]",
       "location": "global",
       "properties": {
         "virtualNetwork": {
