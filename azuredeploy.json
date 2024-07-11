@@ -20,6 +20,7 @@
     "groupName": "registry",
     "keyVaultName": "[format('kv-{0}', variables('uniqueSuffix'))]",
     "location": "[resourceGroup().location]",
+    "privateDNSName": "[format('{0}-dns.{1}', variables('aiServicesName'), variables('uniqueSuffix'))]",
     "privateEndpointName": "[format('{0}-pe-{1}', variables('aiServicesName'), variables('uniqueSuffix'))]",
     "privateLinkName": "[format('{0}-pl-{1}', variables('aiServicesName'), variables('uniqueSuffix'))]",
     "privateLinkAPIName": "[format('{0}-pl-api-{1}', variables('aiServicesName'), variables('uniqueSuffix'))]",
@@ -219,7 +220,7 @@
     {
       "type": "Microsoft.Network/privateDnsZones",
       "apiVersion": "2018-09-01",
-      "name": "[variables('privateLinkName')]",
+      "name": "[variables('privateDNSName')]",
       "location": "global",
       "properties": {
         "virtualNetwork": {
