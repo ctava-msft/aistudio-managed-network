@@ -225,7 +225,7 @@
       "location": "global",
       "properties": {
         "virtualNetwork": {
-          "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
+          "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'), 'default')]"
         },
         "registrationEnabled": false
       },
@@ -240,7 +240,7 @@
       "location": "global",
       "properties": {
         "virtualNetwork": {
-          "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
+          "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'), 'default')]"
         },
         "registrationEnabled": false
       },
