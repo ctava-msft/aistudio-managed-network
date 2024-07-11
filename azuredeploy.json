@@ -234,7 +234,6 @@
         "registrationEnabled": false
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/privateDnsZones', concat(variables('privateLinkNotebookName'),'.privatelink.notebooks.azure.net'))]",
         "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
       ]
     },
