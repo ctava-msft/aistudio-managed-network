@@ -188,7 +188,7 @@
           {
             "name": "[variables('aiServicesName')]",
             "properties": {
-              "privateLinkServiceId": "[resourceId('Microsoft.MachineLearningServices/workspaces', variables('aiServicesName'))]",
+              "privateLinkServiceId": "[resourceId('Microsoft.MachineLearningServices/workspaces', variables('workspaceName'))]",
               "groupIds": [
                 "[variables('groupName')]"
               ]
@@ -197,7 +197,7 @@
         ]
       },
       "dependsOn": [
-        "[resourceId('Microsoft.MachineLearningServices/workspaces', variables('aiServicesName'))]"
+        "[resourceId('Microsoft.MachineLearningServices/workspaces', variables('workspaceName'))]"
       ]
     },
     {
