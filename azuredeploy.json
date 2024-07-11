@@ -213,7 +213,7 @@
     {
       "type": "Microsoft.Network/privateDnsZones",
       "apiVersion": "2018-09-01",
-      "name": "[variables('privateLinkNotebookName')]",
+      "name": "[variables('privateLinkName')]",
       "location": "global",
       "tags": {},
       "properties": {}
