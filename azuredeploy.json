@@ -29,6 +29,7 @@
     "storageContainerName": "[format('sc{0}', variables('uniqueSuffix'))]",
     "tenantId": "[subscription().tenantId]",
     "uniqueSuffix": "[substring(uniqueString(resourceGroup().id), 0, 5)]",
+    "virtualNetworkName": "[format('vnet-{0}', variables('uniqueSuffix'))]",
     "workspaceName": "[format('w-{0}', variables('uniqueSuffix'))]"
   },
   "resources": [
@@ -157,7 +158,7 @@
     {
       "type": "Microsoft.Network/virtualNetworks",
       "apiVersion": "2023-04-01",
-      "name": "CoreVnet",
+      "name": "[variables('virtualNetworkName')]",
       "location": "[variables('location')]",
       "properties": {
         "addressSpace": {
@@ -182,7 +183,7 @@
       "location": "[variables('location')]",
       "properties": {
         "subnet": {
-          "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'CoreVnet', 'default')]"
+          "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), 'default')]"
         },
         "customNetworkInterfaceName": "[format('{0}-nic-{1}', variables('aiServicesName'), variables('uniqueSuffix'))]",
         "privateLinkServiceConnections": [
@@ -224,7 +225,7 @@
       "location": "global",
       "properties": {
         "virtualNetwork": {
-          "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'CoreVnet', 'default')]"
+          "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'), 'default')]"
         },
         "registrationEnabled": false
       },
@@ -239,13 +240,13 @@
       "location": "global",
       "properties": {
         "virtualNetwork": {
-          "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'CoreVnet', 'default')]"
+          "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'), 'default')]"
         },
         "registrationEnabled": false
       },
       "dependsOn": [
         "[resourceId('Microsoft.Network/privateDnsZones', 'privatelink.notebooks.azure.net')]",
-        "[resourceId('Microsoft.Network/virtualNetworks', 'CoreVnet')]"
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
       ]
     },
     {
