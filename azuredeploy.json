@@ -225,7 +225,7 @@
     {
       "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
       "apiVersion": "2018-09-01",
-      "name": "[format('{0}/{1}', variables('privateLinkNotebookName'), '.privatelink.notebooks.azure.net')]",
+      "name": "[format('{0}/{1}', variables('privateLinkNotebookName'), concat(variables('privateLinkNotebookName'),'.privatelink.notebooks.azure.net'))]",
       "location": "global",
       "properties": {
         "virtualNetwork": {
