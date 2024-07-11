@@ -17,13 +17,18 @@
   "variables": {
     "aiServicesName": "[format('ais-{0}', variables('uniqueSuffix'))]",
     "computeName": "[format('ci-{0}', variables('uniqueSuffix'))]",
+    "groupName": "registry",
     "keyVaultName": "[format('kv-{0}', variables('uniqueSuffix'))]",
-    "location" : "[resourceGroup().location]",
+    "location": "[resourceGroup().location]",
+    "privateEndpointName": "[format('{0}-pe-{1}', variables('aiServicesName'), variables('uniqueSuffix'))]",
+    "privateLinkName": "[format('{0}-pl-{1}', variables('aiServicesName'), variables('uniqueSuffix'))]",
+    "privateLinkAPIName": "[format('{0}-pl-api-{1}', variables('aiServicesName'), variables('uniqueSuffix'))]",
+    "privateLinkNotebookName": "[format('{0}-pl-nb-{1}', variables('aiServicesName'), variables('uniqueSuffix'))]",
     "storageAccountName": "[format('sa{0}', variables('uniqueSuffix'))]",
     "storageContainerName": "[format('sc{0}', variables('uniqueSuffix'))]",
     "tenantId": "[subscription().tenantId]",
     "uniqueSuffix": "[substring(uniqueString(resourceGroup().id), 0, 5)]",
-    "workspaceName" : "[format('w-{0}', variables('uniqueSuffix'))]"
+    "workspaceName": "[format('w-{0}', variables('uniqueSuffix'))]"
   },
   "resources": [
     {
@@ -112,19 +117,19 @@
       ]
     },
     {
-    "type": "Microsoft.CognitiveServices/accounts",
-    "apiVersion": "2021-10-01",
-    "name": "[variables('aiServicesName')]",
-    "location": "[variables('location')]",
-    "sku": {
-      "name": "S0"
-    },
-    "kind": "AIServices",
-    "properties": {
-      "apiProperties": {
-        "statisticsEnabled": false
+      "type": "Microsoft.CognitiveServices/accounts",
+      "apiVersion": "2021-10-01",
+      "name": "[variables('aiServicesName')]",
+      "location": "[variables('location')]",
+      "sku": {
+        "name": "S0"
+      },
+      "kind": "AIServices",
+      "properties": {
+        "apiProperties": {
+          "statisticsEnabled": false
+        }
       }
-    }
     },
     {
       "type": "Microsoft.MachineLearningServices/workspaces/connections",
@@ -146,6 +151,127 @@
       "dependsOn": [
         "[resourceId('Microsoft.MachineLearningServices/workspaces', variables('workspaceName'))]",
         "[resourceId('Microsoft.CognitiveServices/accounts', variables('aiServicesName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Network/virtualNetworks",
+      "apiVersion": "2023-04-01",
+      "name": "CoreVnet",
+      "location": "[variables('location')]",
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "10.1.0.0/16"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "default",
+            "properties": {
+              "addressPrefix": "10.1.0.0/24"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/privateEndpoints",
+      "apiVersion": "2023-04-01",
+      "name": "[variables('privateEndpointName')]",
+      "location": "[variables('location')]",
+      "properties": {
+        "subnet": {
+          "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'CoreVnet', 'default')]"
+        },
+        "customNetworkInterfaceName": "[format('{0}-nic-{1}', variables('aiServicesName'), variables('uniqueSuffix'))]",
+        "privateLinkServiceConnections": [
+          {
+            "name": "[variables('aiServicesName')]",
+            "properties": {
+              "privateLinkServiceId": "[resourceId('Microsoft.MachineLearningServices/workspaces', variables('aiServicesName'))]",
+              "groupIds": [
+                "[variables('groupName')]"
+              ]
+            }
+          }
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.MachineLearningServices/workspaces', variables('aiServicesName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Network/privateDnsZones",
+      "apiVersion": "2018-09-01",
+      "name": "privatelink.api.azureml.ms",
+      "location": "global",
+      "tags": {},
+      "properties": {}
+    },
+    {
+      "type": "Microsoft.Network/privateDnsZones",
+      "apiVersion": "2018-09-01",
+      "name": "privatelink.notebooks.azure.net",
+      "location": "global",
+      "tags": {},
+      "properties": {}
+    },
+    {
+      "type": "Microsoft.Network/privateDnsZones",
+      "apiVersion": "2018-09-01",
+      "name": "[variables('privateLinkName')]",
+      "location": "global",
+      "properties": {
+        "virtualNetwork": {
+          "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'CoreVnet', 'default')]"
+        },
+        "registrationEnabled": false
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/privateDnsZones', 'privatelink.api.azureml.ms')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+      "apiVersion": "2018-09-01",
+      "name": "[format('{0}/{1}', 'privatelink.notebooks.azure.net', variables('privateLinkNotebookName'))]",
+      "location": "global",
+      "properties": {
+        "virtualNetwork": {
+          "id": "[resourceId('Microsoft.Network/privateDnsZones', 'privatelink.api.azureml.ms')]"
+        },
+        "registrationEnabled": false
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/privateDnsZones', 'privatelink.notebooks.azure.net')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
+      "apiVersion": "2023-04-01",
+      "name": "[format('{0}/{1}', variables('privateEndpointName'), 'default')]",
+      "properties": {
+        "privateDnsZoneConfigs": [
+          {
+            "name": "privatelink-api-azureml-ms",
+            "properties": {
+              "privateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', 'privatelink.api.azureml.ms')]"
+            }
+          },
+          {
+            "name": "privatelink-notebooks-azure-net",
+            "properties": {
+              "privateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', 'privatelink.notebooks.azure.net')]"
+            }
+          }
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/privateEndpoints', variables('privateEndpointName'))]",
+        "[resourceId('Microsoft.Network/privateDnsZones', 'privatelink.api.azureml.ms')]",
+        "[resourceId('Microsoft.Network/privateDnsZones', 'privatelink.notebooks.azure.net')]",
+        "[resourceId('Microsoft.Network/privateDnsZones/virtualNetworkLinks', 'privatelink.api.azureml.ms', variables('privateLinkAPIName'))]",
+        "[resourceId('Microsoft.Network/privateDnsZones/virtualNetworkLinks', 'privatelink.notebooks.azure.net', variables('privateLinkNotebookName'))]"
       ]
     }
   ],
