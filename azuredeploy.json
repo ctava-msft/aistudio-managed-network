@@ -238,7 +238,7 @@
       "location": "global",
       "properties": {
         "virtualNetwork": {
-          "id": "[resourceId('Microsoft.Network/privateDnsZones', 'privatelink.api.azureml.ms')]"
+          "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'CoreVnet', 'default')]"
         },
         "registrationEnabled": false
       },
