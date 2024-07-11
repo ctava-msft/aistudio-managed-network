@@ -269,9 +269,9 @@
       "dependsOn": [
         "[resourceId('Microsoft.Network/privateEndpoints', variables('privateEndpointName'))]",
         "[resourceId('Microsoft.Network/privateDnsZones', 'privatelink.api.azureml.ms')]",
-        "[resourceId('Microsoft.Network/privateDnsZones', 'privatelink.notebooks.azure.net')]",
-        "[resourceId('Microsoft.Network/privateDnsZones/virtualNetworkLinks', 'privatelink.api.azureml.ms', variables('privateLinkAPIName'))]",
-        "[resourceId('Microsoft.Network/privateDnsZones/virtualNetworkLinks', 'privatelink.notebooks.azure.net', variables('privateLinkNotebookName'))]"
+        "[resourceId('Microsoft.Network/privateDnsZones', 'privatelink.notebooks.azure.net')]"
+        //"[resourceId('Microsoft.Network/privateDnsZones/virtualNetworkLinks', 'privatelink.api.azureml.ms', variables('privateLinkAPIName'))]",
+        //"[resourceId('Microsoft.Network/privateDnsZones/virtualNetworkLinks', 'privatelink.notebooks.azure.net', variables('privateLinkNotebookName'))]"
       ]
     }
   ],
