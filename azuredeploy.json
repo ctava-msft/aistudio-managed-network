@@ -22,7 +22,9 @@
     "location": "[resourceGroup().location]",
     "privateEndpointName": "[format('{0}-pe-{1}', variables('aiServicesName'), variables('uniqueSuffix'))]",
     "privateLinkName": "[format('{0}-pl-{1}', variables('aiServicesName'), variables('uniqueSuffix'))]",
+    "privateLinkDNSSuffix": ".privatelink.azureml.ms",
     "privateLinkNotebookName": "[format('{0}-pl-nb-{1}', variables('aiServicesName'), variables('uniqueSuffix'))]",
+    "privateLinkNotebookDNSSuffix": ".privatelink.notebooks.azure.net",
     "storageAccountName": "[format('sa{0}', variables('uniqueSuffix'))]",
     "storageContainerName": "[format('sc{0}', variables('uniqueSuffix'))]",
     "tenantId": "[subscription().tenantId]",
@@ -203,7 +205,7 @@
     {
       "type": "Microsoft.Network/privateDnsZones",
       "apiVersion": "2018-09-01",
-      "name": "[concat(variables('privateLinkNotebookName'), '.privatelink.notebooks.azure.net')]",
+      "name": "[concat(variables('privateLinkNotebookName'), variables('privateLinkNotebookDNSSuffix'))]",
       "location": "global",
       "tags": {},
       "properties": {},
@@ -214,7 +216,7 @@
     {
       "type": "Microsoft.Network/privateDnsZones",
       "apiVersion": "2018-09-01",
-      "name": "[concat(variables('privateLinkName'), '.privatelink.azureml.ms')]",
+      "name": "[concat(variables('privateLinkName'), variables('privateLinkDNSSuffix'))]",
       "location": "global",
       "tags": {},
       "properties": {},
@@ -225,7 +227,7 @@
     {
       "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
       "apiVersion": "2018-09-01",
-      "name": "[format('{0}/{1}', variables('privateLinkNotebookName'), '.privatelink.notebooks.azure.net')]",
+      "name": "[format('{0}/{1}', variables('privateLinkNotebookName'), variables('privateLinkNotebookDNSSuffix'))]",
       "location": "global",
       "properties": {
         "virtualNetwork": {
@@ -234,7 +236,7 @@
         "registrationEnabled": false
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/privateDnsZones', concat(variables('privateLinkName'), '.privatelink.azureml.ms'))]",
+        "[resourceId('Microsoft.Network/privateDnsZones', concat(variables('privateLinkName'), variables('privateLinkDNSSuffix')))]",
         "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
       ]
     },
@@ -247,21 +249,21 @@
           {
             "name": "privatelink-api-azureml-ms",
             "properties": {
-              "privateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', concat(variables('privateLinkName'), '.privatelink.azureml.ms'))]"
+              "privateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', concat(variables('privateLinkName'), variables('privateLinkDNSSuffix')))]"
             }
           },
           {
             "name": "privatelink-notebooks-azure-net",
             "properties": {
-              "privateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', concat(variables('privateLinkNotebookName'), '.privatelink.notebooks.azure.net'))]"
+              "privateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', concat(variables('privateLinkNotebookName'), variables('privateLinkNotebookDNSSuffix')))]"
             }
           }
         ]
       },
       "dependsOn": [
         "[resourceId('Microsoft.Network/privateEndpoints', variables('privateEndpointName'))]",
-        "[resourceId('Microsoft.Network/privateDnsZones', concat(variables('privateLinkName'), '.privatelink.azureml.ms'))]",
-        "[resourceId('Microsoft.Network/privateDnsZones', concat(variables('privateLinkNotebookName'), '.privatelink.notebooks.azure.net'))]"
+        "[resourceId('Microsoft.Network/privateDnsZones', concat(variables('privateLinkName'), variables('privateLinkDNSSuffix')))]",
+        "[resourceId('Microsoft.Network/privateDnsZones', concat(variables('privateLinkNotebookName'), variables('privateLinkNotebookDNSSuffix')))]"
       ]
     }
   ],
