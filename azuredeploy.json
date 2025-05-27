@@ -230,9 +230,6 @@
       },
       "kind": "AIServices",
       "properties": {
-        "apiProperties": {
-          "statisticsEnabled": false
-        },
         "publicNetworkAccess": "Disabled",
         "networkAcls": {
           "defaultAction": "Deny",
