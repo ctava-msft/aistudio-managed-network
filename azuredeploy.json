@@ -9,28 +9,50 @@
     }
   },
   "parameters": {
-    "vmComputeSize": {
-      "defaultValue": "STANDARD_D2",
-      "type": "string"
-    }
+    // Parameters section is now empty or contains other parameters
   },
   "variables": {
+    "developerPrincipalId": "",
+    "allowedIpAddresses": [],
     "aiServicesName": "[format('ais-{0}', variables('uniqueSuffix'))]",
-    "computeName": "[format('ci-{0}', variables('uniqueSuffix'))]",
-    "groupName": "amlworkspace",
     "keyVaultName": "[format('kv-{0}', variables('uniqueSuffix'))]",
     "location": "[resourceGroup().location]",
-    "privateEndpointName": "[format('{0}-pe-{1}', variables('aiServicesName'), variables('uniqueSuffix'))]",
-    "privateLinkName": "[format('{0}-pl-{1}', variables('aiServicesName'), variables('uniqueSuffix'))]",
-    "privateLinkDNSSuffix": ".privatelink.azureml.ms",
-    "privateLinkNotebookName": "[format('{0}-pl-nb-{1}', variables('aiServicesName'), variables('uniqueSuffix'))]",
-    "privateLinkNotebookDNSSuffix": ".privatelink.notebooks.azure.net",
+    "searchServiceName": "[format('search-{0}', variables('uniqueSuffix'))]",
     "storageAccountName": "[format('sa{0}', variables('uniqueSuffix'))]",
     "storageContainerName": "[format('sc{0}', variables('uniqueSuffix'))]",
     "tenantId": "[subscription().tenantId]",
     "uniqueSuffix": "[substring(uniqueString(resourceGroup().id), 0, 5)]",
     "virtualNetworkName": "[format('vnet-{0}', variables('uniqueSuffix'))]",
-    "workspaceName": "[format('w-{0}', variables('uniqueSuffix'))]"
+    "workspaceName": "[format('w-{0}', variables('uniqueSuffix'))]",
+    "privateEndpoints": {
+      "aiHub": "[format('pe-aihub-{0}', variables('uniqueSuffix'))]",
+      "aiServices": "[format('pe-aiservices-{0}', variables('uniqueSuffix'))]",
+      "keyVault": "[format('pe-kv-{0}', variables('uniqueSuffix'))]",
+      "storageBlob": "[format('pe-storage-blob-{0}', variables('uniqueSuffix'))]",
+      "storageFile": "[format('pe-storage-file-{0}', variables('uniqueSuffix'))]",
+      "search": "[format('pe-search-{0}', variables('uniqueSuffix'))]"
+    },
+    "privateDnsZones": {
+      "azureml": "privatelink.api.azureml.ms",
+      "notebooks": "privatelink.notebooks.azure.net",
+      "cognitiveservices": "privatelink.cognitiveservices.azure.com",
+      "openai": "privatelink.openai.azure.com",
+      "aiservices": "privatelink.services.ai.azure.com",
+      "blob": "privatelink.blob.core.windows.net",
+      "file": "privatelink.file.core.windows.net",
+      "search": "privatelink.search.windows.net",
+      "vault": "privatelink.vaultcore.azure.net"
+    },
+    "roleDefinitions": {
+      "cognitiveServicesOpenAIContributor": "a001fd3d-188f-4b5d-821b-7da978bf7442",
+      "cognitiveServicesContributor": "25fbc0a9-bd7c-42a3-aa1a-3b75d497ee68",
+      "contributor": "b24988ac-6180-42a0-ab88-20f7382dd24c",
+      "searchServicesContributor": "7ca78c08-252a-4471-8644-bb5ff32d4ba0",
+      "searchIndexDataContributor": "8ebe5a00-799e-43f5-93ac-243d3dce84a7",
+      "searchIndexDataReader": "1407120a-92aa-4202-b7e9-c0e197c71c8f",
+      "storageBlobDataContributor": "ba92f5b4-2d11-453d-a403-e96b0029c9fe",
+      "storageFileDataPrivilegedContributor": "69566ab7-960f-475b-8e7c-b3118f30c6bd"
+    }
   },
   "resources": [
     {
@@ -54,7 +76,14 @@
           },
           "keySource": "Microsoft.Storage"
         },
-        "supportsHttpsTrafficOnly": true
+        "supportsHttpsTrafficOnly": true,
+        "publicNetworkAccess": "Disabled",
+        "allowBlobPublicAccess": false,
+        "networkAcls": {
+          "defaultAction": "Deny",
+          "bypass": "AzureServices",
+          "ipRules": "[if(greater(length(variables('allowedIpAddresses')), 0), variables('allowedIpAddresses'), createArray())]"
+        }
       }
     },
     {
@@ -77,12 +106,18 @@
           "name": "standard",
           "family": "A"
         },
-        "accessPolicies": []
+        "accessPolicies": [],
+        "publicNetworkAccess": "Disabled",
+        "networkAcls": {
+          "defaultAction": "Deny",
+          "bypass": "AzureServices",
+          "ipRules": "[if(greater(length(variables('allowedIpAddresses')), 0), variables('allowedIpAddresses'), createArray())]"
+        }
       }
     },
     {
       "type": "Microsoft.MachineLearningServices/workspaces",
-      "apiVersion": "2020-03-01",
+      "apiVersion": "2024-04-01-preview",
       "name": "[variables('workspaceName')]",
       "location": "[variables('location')]",
       "identity": {
@@ -95,7 +130,7 @@
         "storageAccount": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
         "publicNetworkAccess": "Disabled",
         "managedNetwork": {
-          "isolationMode": "AllowInternetOutBound"
+          "isolationMode": "AllowInternetOutbound"
         }
       },
       "dependsOn": [
@@ -104,25 +139,92 @@
       ]
     },
     {
-      "type": "Microsoft.MachineLearningServices/workspaces/computes",
-      "apiVersion": "2021-07-01",
-      "name": "[format('{0}/{1}', variables('workspaceName'), format('{0}', variables('computeName')))]",
-      "location": "[variables('location')]",
+      "type": "Microsoft.MachineLearningServices/workspaces/outboundRules",
+      "apiVersion": "2024-04-01-preview",
+      "name": "[format('{0}/AzureAISearch', variables('workspaceName'))]",
       "properties": {
-        "computeType": "ComputeInstance",
-        "properties": {
-          "vmSize": "[parameters('vmComputeSize')]"
+        "type": "PrivateEndpoint",
+        "destination": {
+          "serviceResourceId": "[resourceId('Microsoft.Search/searchServices', variables('searchServiceName'))]",
+          "subresourceType": "searchService"
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.MachineLearningServices/workspaces', variables('workspaceName'))]"
+        "[resourceId('Microsoft.MachineLearningServices/workspaces', variables('workspaceName'))]",
+        "[resourceId('Microsoft.Search/searchServices', variables('searchServiceName'))]"
       ]
+    },
+    {
+      "type": "Microsoft.MachineLearningServices/workspaces/outboundRules",
+      "apiVersion": "2024-04-01-preview",
+      "name": "[format('{0}/AzureAIServices', variables('workspaceName'))]",
+      "properties": {
+        "type": "PrivateEndpoint",
+        "destination": {
+          "serviceResourceId": "[resourceId('Microsoft.CognitiveServices/accounts', variables('aiServicesName'))]",
+          "subresourceType": "account"
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.MachineLearningServices/workspaces', variables('workspaceName'))]",
+        "[resourceId('Microsoft.CognitiveServices/accounts', variables('aiServicesName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.MachineLearningServices/workspaces/outboundRules",
+      "apiVersion": "2024-04-01-preview",
+      "name": "[format('{0}/StorageAccount', variables('workspaceName'))]",
+      "properties": {
+        "type": "PrivateEndpoint",
+        "destination": {
+          "serviceResourceId": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
+          "subresourceType": "blob"
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.MachineLearningServices/workspaces', variables('workspaceName'))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Search/searchServices",
+      "apiVersion": "2023-11-01",
+      "name": "[variables('searchServiceName')]",
+      "location": "[variables('location')]",
+      "identity": {
+        "type": "SystemAssigned"
+      },
+      "sku": {
+        "name": "standard"
+      },
+      "properties": {
+        "replicaCount": 1,
+        "partitionCount": 1,
+        "hostingMode": "default",
+        "publicNetworkAccess": "disabled",
+        "networkRuleSet": {
+          "ipRules": "[if(greater(length(variables('allowedIpAddresses')), 0), variables('allowedIpAddresses'), createArray())]",
+          "bypass": "AzurePortal"
+        },
+        "encryptionWithCmk": {
+          "enforcement": "Unspecified"
+        },
+        "disableLocalAuth": false,
+        "authOptions": {
+          "aadOrApiKey": {
+            "aadAuthFailureMode": "http401WithBearerChallenge"
+          }
+        }
+      }
     },
     {
       "type": "Microsoft.CognitiveServices/accounts",
       "apiVersion": "2021-10-01",
       "name": "[variables('aiServicesName')]",
       "location": "[variables('location')]",
+      "identity": {
+        "type": "SystemAssigned"
+      },
       "sku": {
         "name": "S0"
       },
@@ -130,21 +232,24 @@
       "properties": {
         "apiProperties": {
           "statisticsEnabled": false
+        },
+        "publicNetworkAccess": "Disabled",
+        "networkAcls": {
+          "defaultAction": "Deny",
+          "bypass": "AzureServices",
+          "ipRules": "[if(greater(length(variables('allowedIpAddresses')), 0), variables('allowedIpAddresses'), createArray())]"
         }
       }
     },
     {
       "type": "Microsoft.MachineLearningServices/workspaces/connections",
-      "apiVersion": "2023-06-01-preview",
+      "apiVersion": "2024-04-01-preview",
       "name": "[format('{0}/{1}', variables('workspaceName'), format('{0}-connection-AzureOpenAI', variables('workspaceName')))]",
       "properties": {
         "category": "AzureOpenAI",
-        "target": "[resourceId('Microsoft.CognitiveServices/accounts', variables('aiServicesName'))]",
-        "authType": "ApiKey",
+        "target": "[reference(resourceId('Microsoft.CognitiveServices/accounts', variables('aiServicesName')), '2021-10-01').endpoint]",
+        "authType": "AAD",
         "isSharedToAll": true,
-        "credentials": {
-          "key": "[format('{0}', listKeys(resourceId('Microsoft.CognitiveServices/accounts', variables('aiServicesName')), '2021-10-01').key1)]"
-        },
         "metadata": {
           "ApiType": "Azure",
           "ResourceId": "[resourceId('Microsoft.CognitiveServices/accounts', variables('aiServicesName'))]"
@@ -153,6 +258,25 @@
       "dependsOn": [
         "[resourceId('Microsoft.MachineLearningServices/workspaces', variables('workspaceName'))]",
         "[resourceId('Microsoft.CognitiveServices/accounts', variables('aiServicesName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.MachineLearningServices/workspaces/connections",
+      "apiVersion": "2024-04-01-preview",
+      "name": "[format('{0}/{1}', variables('workspaceName'), format('{0}-connection-AzureAISearch', variables('workspaceName')))]",
+      "properties": {
+        "category": "CognitiveSearch",
+        "target": "[format('https://{0}.search.windows.net/', variables('searchServiceName'))]",
+        "authType": "AAD",
+        "isSharedToAll": true,
+        "metadata": {
+          "ApiType": "Azure",
+          "ResourceId": "[resourceId('Microsoft.Search/searchServices', variables('searchServiceName'))]"
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.MachineLearningServices/workspaces', variables('workspaceName'))]",
+        "[resourceId('Microsoft.Search/searchServices', variables('searchServiceName'))]"
       ]
     },
     {
@@ -170,64 +294,71 @@
           {
             "name": "default",
             "properties": {
-              "addressPrefix": "10.1.0.0/24"
+              "addressPrefix": "10.1.0.0/24",
+              "privateEndpointNetworkPolicies": "Disabled"
             }
           }
         ]
       }
     },
     {
-      "type": "Microsoft.Network/privateEndpoints",
-      "apiVersion": "2023-04-01",
-      "name": "[variables('privateEndpointName')]",
-      "location": "[variables('location')]",
-      "properties": {
-        "subnet": {
-          "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), 'default')]"
-        },
-        "customNetworkInterfaceName": "[format('{0}-nic-{1}', variables('aiServicesName'), variables('uniqueSuffix'))]",
-        "privateLinkServiceConnections": [
-          {
-            "name": "[variables('aiServicesName')]",
-            "properties": {
-              "privateLinkServiceId": "[resourceId('Microsoft.MachineLearningServices/workspaces', variables('workspaceName'))]",
-              "groupIds": [
-                "[variables('groupName')]"
-              ]
-            }
-          }
-        ]
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.MachineLearningServices/workspaces', variables('workspaceName'))]"
-      ]
+      "type": "Microsoft.Network/privateDnsZones",
+      "apiVersion": "2018-09-01",
+      "name": "[variables('privateDnsZones').azureml]",
+      "location": "global"
     },
     {
       "type": "Microsoft.Network/privateDnsZones",
       "apiVersion": "2018-09-01",
-      "name": "[concat(variables('privateLinkNotebookName'), variables('privateLinkNotebookDNSSuffix'))]",
-      "location": "global",
-      "tags": {},
-      "properties": {},
-      "dependsOn": [
-        "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
-      ]
+      "name": "[variables('privateDnsZones').notebooks]",
+      "location": "global"
     },
     {
       "type": "Microsoft.Network/privateDnsZones",
       "apiVersion": "2018-09-01",
-      "name": "[concat(variables('privateLinkName'), variables('privateLinkDNSSuffix'))]",
-      "location": "global",
-      "tags": {},
-      "properties": {},
-      "dependsOn": [
-        "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
-      ]
+      "name": "[variables('privateDnsZones').cognitiveservices]",
+      "location": "global"
+    },
+    {
+      "type": "Microsoft.Network/privateDnsZones",
+      "apiVersion": "2018-09-01",
+      "name": "[variables('privateDnsZones').openai]",
+      "location": "global"
+    },
+    {
+      "type": "Microsoft.Network/privateDnsZones",
+      "apiVersion": "2018-09-01",
+      "name": "[variables('privateDnsZones').aiservices]",
+      "location": "global"
+    },
+    {
+      "type": "Microsoft.Network/privateDnsZones",
+      "apiVersion": "2018-09-01",
+      "name": "[variables('privateDnsZones').blob]",
+      "location": "global"
+    },
+    {
+      "type": "Microsoft.Network/privateDnsZones",
+      "apiVersion": "2018-09-01",
+      "name": "[variables('privateDnsZones').file]",
+      "location": "global"
+    },
+    {
+      "type": "Microsoft.Network/privateDnsZones",
+      "apiVersion": "2018-09-01",
+      "name": "[variables('privateDnsZones').search]",
+      "location": "global"
+    },
+    {
+      "type": "Microsoft.Network/privateDnsZones",
+      "apiVersion": "2018-09-01",
+      "name": "[variables('privateDnsZones').vault]",
+      "location": "global"
     },
     {
       "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
       "apiVersion": "2018-09-01",
-      "name": "[format('{0}/{1}', variables('privateLinkNotebookName'), variables('privateLinkNotebookDNSSuffix'))]",
+      "name": "[format('{0}/{1}', variables('privateDnsZones').azureml, variables('virtualNetworkName'))]",
       "location": "global",
       "properties": {
         "virtualNetwork": {
@@ -236,37 +367,692 @@
         "registrationEnabled": false
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/privateDnsZones', concat(variables('privateLinkName'), variables('privateLinkDNSSuffix')))]",
+        "[resourceId('Microsoft.Network/privateDnsZones', variables('privateDnsZones').azureml)]",
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+      "apiVersion": "2018-09-01",
+      "name": "[format('{0}/{1}', variables('privateDnsZones').notebooks, variables('virtualNetworkName'))]",
+      "location": "global",
+      "properties": {
+        "virtualNetwork": {
+          "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
+        },
+        "registrationEnabled": false
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/privateDnsZones', variables('privateDnsZones').notebooks)]",
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+      "apiVersion": "2018-09-01",
+      "name": "[format('{0}/{1}', variables('privateDnsZones').cognitiveservices, variables('virtualNetworkName'))]",
+      "location": "global",
+      "properties": {
+        "virtualNetwork": {
+          "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
+        },
+        "registrationEnabled": false
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/privateDnsZones', variables('privateDnsZones').cognitiveservices)]",
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+      "apiVersion": "2018-09-01",
+      "name": "[format('{0}/{1}', variables('privateDnsZones').openai, variables('virtualNetworkName'))]",
+      "location": "global",
+      "properties": {
+        "virtualNetwork": {
+          "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
+        },
+        "registrationEnabled": false
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/privateDnsZones', variables('privateDnsZones').openai)]",
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+      "apiVersion": "2018-09-01",
+      "name": "[format('{0}/{1}', variables('privateDnsZones').aiservices, variables('virtualNetworkName'))]",
+      "location": "global",
+      "properties": {
+        "virtualNetwork": {
+          "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
+        },
+        "registrationEnabled": false
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/privateDnsZones', variables('privateDnsZones').aiservices)]",
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+      "apiVersion": "2018-09-01",
+      "name": "[format('{0}/{1}', variables('privateDnsZones').blob, variables('virtualNetworkName'))]",
+      "location": "global",
+      "properties": {
+        "virtualNetwork": {
+          "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
+        },
+        "registrationEnabled": false
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/privateDnsZones', variables('privateDnsZones').blob)]",
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+      "apiVersion": "2018-09-01",
+      "name": "[format('{0}/{1}', variables('privateDnsZones').file, variables('virtualNetworkName'))]",
+      "location": "global",
+      "properties": {
+        "virtualNetwork": {
+          "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
+        },
+        "registrationEnabled": false
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/privateDnsZones', variables('privateDnsZones').file)]",
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+      "apiVersion": "2018-09-01",
+      "name": "[format('{0}/{1}', variables('privateDnsZones').search, variables('virtualNetworkName'))]",
+      "location": "global",
+      "properties": {
+        "virtualNetwork": {
+          "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
+        },
+        "registrationEnabled": false
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/privateDnsZones', variables('privateDnsZones').search)]",
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+      "apiVersion": "2018-09-01",
+      "name": "[format('{0}/{1}', variables('privateDnsZones').vault, variables('virtualNetworkName'))]",
+      "location": "global",
+      "properties": {
+        "virtualNetwork": {
+          "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
+        },
+        "registrationEnabled": false
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/privateDnsZones', variables('privateDnsZones').vault)]",
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Network/privateEndpoints",
+      "apiVersion": "2023-04-01",
+      "name": "[variables('privateEndpoints').aiHub]",
+      "location": "[variables('location')]",
+      "properties": {
+        "subnet": {
+          "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), 'default')]"
+        },
+        "privateLinkServiceConnections": [
+          {
+            "name": "[variables('privateEndpoints').aiHub]",
+            "properties": {
+              "privateLinkServiceId": "[resourceId('Microsoft.MachineLearningServices/workspaces', variables('workspaceName'))]",
+              "groupIds": [
+                "amlworkspace"
+              ]
+            }
+          }
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.MachineLearningServices/workspaces', variables('workspaceName'))]",
         "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
       ]
     },
     {
       "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
       "apiVersion": "2023-04-01",
-      "name": "[format('{0}/{1}', variables('privateEndpointName'), 'default')]",
+      "name": "[format('{0}/default', variables('privateEndpoints').aiHub)]",
       "properties": {
         "privateDnsZoneConfigs": [
           {
             "name": "privatelink-api-azureml-ms",
             "properties": {
-              "privateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', concat(variables('privateLinkName'), variables('privateLinkDNSSuffix')))]"
+              "privateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', variables('privateDnsZones').azureml)]"
             }
           },
           {
             "name": "privatelink-notebooks-azure-net",
             "properties": {
-              "privateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', concat(variables('privateLinkNotebookName'), variables('privateLinkNotebookDNSSuffix')))]"
+              "privateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', variables('privateDnsZones').notebooks)]"
             }
           }
         ]
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/privateEndpoints', variables('privateEndpointName'))]",
-        "[resourceId('Microsoft.Network/privateDnsZones', concat(variables('privateLinkName'), variables('privateLinkDNSSuffix')))]",
-        "[resourceId('Microsoft.Network/privateDnsZones', concat(variables('privateLinkNotebookName'), variables('privateLinkNotebookDNSSuffix')))]"
+        "[resourceId('Microsoft.Network/privateEndpoints', variables('privateEndpoints').aiHub)]",
+        "[resourceId('Microsoft.Network/privateDnsZones', variables('privateDnsZones').azureml)]",
+        "[resourceId('Microsoft.Network/privateDnsZones', variables('privateDnsZones').notebooks)]"
+      ]
+    },
+    {
+      "type": "Microsoft.Network/privateEndpoints",
+      "apiVersion": "2023-04-01",
+      "name": "[variables('privateEndpoints').aiServices]",
+      "location": "[variables('location')]",
+      "properties": {
+        "subnet": {
+          "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), 'default')]"
+        },
+        "privateLinkServiceConnections": [
+          {
+            "name": "[variables('privateEndpoints').aiServices]",
+            "properties": {
+              "privateLinkServiceId": "[resourceId('Microsoft.CognitiveServices/accounts', variables('aiServicesName'))]",
+              "groupIds": [
+                "account"
+              ]
+            }
+          }
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.CognitiveServices/accounts', variables('aiServicesName'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
+      "apiVersion": "2023-04-01",
+      "name": "[format('{0}/default', variables('privateEndpoints').aiServices)]",
+      "properties": {
+        "privateDnsZoneConfigs": [
+          {
+            "name": "privatelink-cognitiveservices-azure-com",
+            "properties": {
+              "privateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', variables('privateDnsZones').cognitiveservices)]"
+            }
+          },
+          {
+            "name": "privatelink-openai-azure-com",
+            "properties": {
+              "privateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', variables('privateDnsZones').openai)]"
+            }
+          },
+          {
+            "name": "privatelink-services-ai-azure-com",
+            "properties": {
+              "privateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', variables('privateDnsZones').aiservices)]"
+            }
+          }
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/privateEndpoints', variables('privateEndpoints').aiServices)]",
+        "[resourceId('Microsoft.Network/privateDnsZones', variables('privateDnsZones').cognitiveservices)]",
+        "[resourceId('Microsoft.Network/privateDnsZones', variables('privateDnsZones').openai)]",
+        "[resourceId('Microsoft.Network/privateDnsZones', variables('privateDnsZones').aiservices)]"
+      ]
+    },
+    {
+      "type": "Microsoft.Network/privateEndpoints",
+      "apiVersion": "2023-04-01",
+      "name": "[variables('privateEndpoints').storageBlob]",
+      "location": "[variables('location')]",
+      "properties": {
+        "subnet": {
+          "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), 'default')]"
+        },
+        "privateLinkServiceConnections": [
+          {
+            "name": "[variables('privateEndpoints').storageBlob]",
+            "properties": {
+              "privateLinkServiceId": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
+              "groupIds": [
+                "blob"
+              ]
+            }
+          }
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
+      "apiVersion": "2023-04-01",
+      "name": "[format('{0}/default', variables('privateEndpoints').storageBlob)]",
+      "properties": {
+        "privateDnsZoneConfigs": [
+          {
+            "name": "privatelink-blob-core-windows-net",
+            "properties": {
+              "privateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', variables('privateDnsZones').blob)]"
+            }
+          }
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/privateEndpoints', variables('privateEndpoints').storageBlob)]",
+        "[resourceId('Microsoft.Network/privateDnsZones', variables('privateDnsZones').blob)]"
+      ]
+    },
+    {
+      "type": "Microsoft.Network/privateEndpoints",
+      "apiVersion": "2023-04-01",
+      "name": "[variables('privateEndpoints').storageFile]",
+      "location": "[variables('location')]",
+      "properties": {
+        "subnet": {
+          "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), 'default')]"
+        },
+        "privateLinkServiceConnections": [
+          {
+            "name": "[variables('privateEndpoints').storageFile]",
+            "properties": {
+              "privateLinkServiceId": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
+              "groupIds": [
+                "file"
+              ]
+            }
+          }
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
+      "apiVersion": "2023-04-01",
+      "name": "[format('{0}/default', variables('privateEndpoints').storageFile)]",
+      "properties": {
+        "privateDnsZoneConfigs": [
+          {
+            "name": "privatelink-file-core-windows-net",
+            "properties": {
+              "privateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', variables('privateDnsZones').file)]"
+            }
+          }
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/privateEndpoints', variables('privateEndpoints').storageFile)]",
+        "[resourceId('Microsoft.Network/privateDnsZones', variables('privateDnsZones').file)]"
+      ]
+    },
+    {
+      "type": "Microsoft.Network/privateEndpoints",
+      "apiVersion": "2023-04-01",
+      "name": "[variables('privateEndpoints').search]",
+      "location": "[variables('location')]",
+      "properties": {
+        "subnet": {
+          "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), 'default')]"
+        },
+        "privateLinkServiceConnections": [
+          {
+            "name": "[variables('privateEndpoints').search]",
+            "properties": {
+              "privateLinkServiceId": "[resourceId('Microsoft.Search/searchServices', variables('searchServiceName'))]",
+              "groupIds": [
+                "searchService"
+              ]
+            }
+          }
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Search/searchServices', variables('searchServiceName'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
+      "apiVersion": "2023-04-01",
+      "name": "[format('{0}/default', variables('privateEndpoints').search)]",
+      "properties": {
+        "privateDnsZoneConfigs": [
+          {
+            "name": "privatelink-search-windows-net",
+            "properties": {
+              "privateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', variables('privateDnsZones').search)]"
+            }
+          }
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/privateEndpoints', variables('privateEndpoints').search)]",
+        "[resourceId('Microsoft.Network/privateDnsZones', variables('privateDnsZones').search)]"
+      ]
+    },
+    {
+      "type": "Microsoft.Network/privateEndpoints",
+      "apiVersion": "2023-04-01",
+      "name": "[variables('privateEndpoints').keyVault]",
+      "location": "[variables('location')]",
+      "properties": {
+        "subnet": {
+          "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), 'default')]"
+        },
+        "privateLinkServiceConnections": [
+          {
+            "name": "[variables('privateEndpoints').keyVault]",
+            "properties": {
+              "privateLinkServiceId": "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]",
+              "groupIds": [
+                "vault"
+              ]
+            }
+          }
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
+      "apiVersion": "2023-04-01",
+      "name": "[format('{0}/default', variables('privateEndpoints').keyVault)]",
+      "properties": {
+        "privateDnsZoneConfigs": [
+          {
+            "name": "privatelink-vaultcore-azure-net",
+            "properties": {
+              "privateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', variables('privateDnsZones').vault)]"
+            }
+          }
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/privateEndpoints', variables('privateEndpoints').keyVault)]",
+        "[resourceId('Microsoft.Network/privateDnsZones', variables('privateDnsZones').vault)]"
+      ]
+    },
+    {
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "name": "[guid(variables('searchServiceName'), variables('roleDefinitions').searchServicesContributor, variables('developerPrincipalId'))]",
+      "scope": "[resourceId('Microsoft.Search/searchServices', variables('searchServiceName'))]",
+      "properties": {
+        "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitions').searchServicesContributor)]",
+        "principalId": "[variables('developerPrincipalId')]",
+        "principalType": "User"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Search/searchServices', variables('searchServiceName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "name": "[guid(variables('searchServiceName'), variables('roleDefinitions').searchIndexDataContributor, variables('developerPrincipalId'))]",
+      "scope": "[resourceId('Microsoft.Search/searchServices', variables('searchServiceName'))]",
+      "properties": {
+        "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitions').searchIndexDataContributor)]",
+        "principalId": "[variables('developerPrincipalId')]",
+        "principalType": "User"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Search/searchServices', variables('searchServiceName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "name": "[guid(variables('searchServiceName'), variables('roleDefinitions').searchIndexDataReader, variables('developerPrincipalId'))]",
+      "scope": "[resourceId('Microsoft.Search/searchServices', variables('searchServiceName'))]",
+      "properties": {
+        "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitions').searchIndexDataReader)]",
+        "principalId": "[variables('developerPrincipalId')]",
+        "principalType": "User"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Search/searchServices', variables('searchServiceName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "name": "[guid(variables('aiServicesName'), variables('roleDefinitions').cognitiveServicesOpenAIContributor, variables('developerPrincipalId'))]",
+      "scope": "[resourceId('Microsoft.CognitiveServices/accounts', variables('aiServicesName'))]",
+      "properties": {
+        "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitions').cognitiveServicesOpenAIContributor)]",
+        "principalId": "[variables('developerPrincipalId')]",
+        "principalType": "User"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.CognitiveServices/accounts', variables('aiServicesName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "name": "[guid(variables('aiServicesName'), variables('roleDefinitions').cognitiveServicesContributor, variables('developerPrincipalId'))]",
+      "scope": "[resourceId('Microsoft.CognitiveServices/accounts', variables('aiServicesName'))]",
+      "properties": {
+        "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitions').cognitiveServicesContributor)]",
+        "principalId": "[variables('developerPrincipalId')]",
+        "principalType": "User"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.CognitiveServices/accounts', variables('aiServicesName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "name": "[guid(variables('aiServicesName'), variables('roleDefinitions').contributor, variables('developerPrincipalId'))]",
+      "scope": "[resourceId('Microsoft.CognitiveServices/accounts', variables('aiServicesName'))]",
+      "properties": {
+        "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitions').contributor)]",
+        "principalId": "[variables('developerPrincipalId')]",
+        "principalType": "User"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.CognitiveServices/accounts', variables('aiServicesName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "name": "[guid(variables('storageAccountName'), variables('roleDefinitions').contributor, variables('developerPrincipalId'))]",
+      "scope": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
+      "properties": {
+        "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitions').contributor)]",
+        "principalId": "[variables('developerPrincipalId')]",
+        "principalType": "User"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "name": "[guid(variables('storageAccountName'), variables('roleDefinitions').storageBlobDataContributor, variables('developerPrincipalId'))]",
+      "scope": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
+      "properties": {
+        "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitions').storageBlobDataContributor)]",
+        "principalId": "[variables('developerPrincipalId')]",
+        "principalType": "User"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "name": "[guid(variables('storageAccountName'), variables('roleDefinitions').storageFileDataPrivilegedContributor, variables('developerPrincipalId'))]",
+      "scope": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
+      "properties": {
+        "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitions').storageFileDataPrivilegedContributor)]",
+        "principalId": "[variables('developerPrincipalId')]",
+        "principalType": "User"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "name": "[guid(resourceGroup().id, variables('roleDefinitions').contributor, variables('developerPrincipalId'))]",
+      "scope": "[resourceGroup().id]",
+      "properties": {
+        "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitions').contributor)]",
+        "principalId": "[variables('developerPrincipalId')]",
+        "principalType": "User"
+      }
+    },
+    {
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "name": "[guid(variables('searchServiceName'), variables('roleDefinitions').searchIndexDataContributor, reference(resourceId('Microsoft.CognitiveServices/accounts', variables('aiServicesName')), '2021-10-01', 'full').identity.principalId)]",
+      "scope": "[resourceId('Microsoft.Search/searchServices', variables('searchServiceName'))]",
+      "properties": {
+        "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitions').searchIndexDataContributor)]",
+        "principalId": "[reference(resourceId('Microsoft.CognitiveServices/accounts', variables('aiServicesName')), '2021-10-01', 'full').identity.principalId]",
+        "principalType": "ServicePrincipal"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Search/searchServices', variables('searchServiceName'))]",
+        "[resourceId('Microsoft.CognitiveServices/accounts', variables('aiServicesName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "name": "[guid(variables('searchServiceName'), variables('roleDefinitions').searchIndexDataReader, reference(resourceId('Microsoft.CognitiveServices/accounts', variables('aiServicesName')), '2021-10-01', 'full').identity.principalId)]",
+      "scope": "[resourceId('Microsoft.Search/searchServices', variables('searchServiceName'))]",
+      "properties": {
+        "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitions').searchIndexDataReader)]",
+        "principalId": "[reference(resourceId('Microsoft.CognitiveServices/accounts', variables('aiServicesName')), '2021-10-01', 'full').identity.principalId]",
+        "principalType": "ServicePrincipal"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Search/searchServices', variables('searchServiceName'))]",
+        "[resourceId('Microsoft.CognitiveServices/accounts', variables('aiServicesName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "name": "[guid(variables('searchServiceName'), variables('roleDefinitions').searchServicesContributor, reference(resourceId('Microsoft.CognitiveServices/accounts', variables('aiServicesName')), '2021-10-01', 'full').identity.principalId)]",
+      "scope": "[resourceId('Microsoft.Search/searchServices', variables('searchServiceName'))]",
+      "properties": {
+        "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitions').searchServicesContributor)]",
+        "principalId": "[reference(resourceId('Microsoft.CognitiveServices/accounts', variables('aiServicesName')), '2021-10-01', 'full').identity.principalId]",
+        "principalType": "ServicePrincipal"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Search/searchServices', variables('searchServiceName'))]",
+        "[resourceId('Microsoft.CognitiveServices/accounts', variables('aiServicesName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "name": "[guid(variables('aiServicesName'), variables('roleDefinitions').cognitiveServicesContributor, reference(resourceId('Microsoft.Search/searchServices', variables('searchServiceName')), '2023-11-01', 'full').identity.principalId)]",
+      "scope": "[resourceId('Microsoft.CognitiveServices/accounts', variables('aiServicesName'))]",
+      "properties": {
+        "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitions').cognitiveServicesContributor)]",
+        "principalId": "[reference(resourceId('Microsoft.Search/searchServices', variables('searchServiceName')), '2023-11-01', 'full').identity.principalId]",
+        "principalType": "ServicePrincipal"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Search/searchServices', variables('searchServiceName'))]",
+        "[resourceId('Microsoft.CognitiveServices/accounts', variables('aiServicesName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "name": "[guid(variables('aiServicesName'), variables('roleDefinitions').cognitiveServicesOpenAIContributor, reference(resourceId('Microsoft.Search/searchServices', variables('searchServiceName')), '2023-11-01', 'full').identity.principalId)]",
+      "scope": "[resourceId('Microsoft.CognitiveServices/accounts', variables('aiServicesName'))]",
+      "properties": {
+        "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitions').cognitiveServicesOpenAIContributor)]",
+        "principalId": "[reference(resourceId('Microsoft.Search/searchServices', variables('searchServiceName')), '2023-11-01', 'full').identity.principalId]",
+        "principalType": "ServicePrincipal"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Search/searchServices', variables('searchServiceName'))]",
+        "[resourceId('Microsoft.CognitiveServices/accounts', variables('aiServicesName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "name": "[guid(variables('storageAccountName'), variables('roleDefinitions').storageBlobDataContributor, reference(resourceId('Microsoft.Search/searchServices', variables('searchServiceName')), '2023-11-01', 'full').identity.principalId)]",
+      "scope": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
+      "properties": {
+        "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitions').storageBlobDataContributor)]",
+        "principalId": "[reference(resourceId('Microsoft.Search/searchServices', variables('searchServiceName')), '2023-11-01', 'full').identity.principalId]",
+        "principalType": "ServicePrincipal"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
+        "[resourceId('Microsoft.Search/searchServices', variables('searchServiceName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "name": "[guid(variables('storageAccountName'), variables('roleDefinitions').storageBlobDataContributor, reference(resourceId('Microsoft.CognitiveServices/accounts', variables('aiServicesName')), '2021-10-01', 'full').identity.principalId)]",
+      "scope": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
+      "properties": {
+        "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitions').storageBlobDataContributor)]",
+        "principalId": "[reference(resourceId('Microsoft.CognitiveServices/accounts', variables('aiServicesName')), '2021-10-01', 'full').identity.principalId]",
+        "principalType": "ServicePrincipal"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
+        "[resourceId('Microsoft.CognitiveServices/accounts', variables('aiServicesName'))]"
       ]
     }
   ],
   "outputs": {
+    "workspaceName": {
+      "type": "string",
+      "value": "[variables('workspaceName')]"
+    },
+    "aiServicesName": {
+      "type": "string",
+      "value": "[variables('aiServicesName')]"
+    },
+    "searchServiceName": {
+      "type": "string",
+      "value": "[variables('searchServiceName')]"
+    },
+    "storageAccountName": {
+      "type": "string",
+      "value": "[variables('storageAccountName')]"
+    },
+    "keyVaultName": {
+      "type": "string",
+      "value": "[variables('keyVaultName')]"
+    }
   }
 }
