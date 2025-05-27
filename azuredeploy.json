@@ -247,7 +247,7 @@
       "name": "[format('{0}/{1}', variables('workspaceName'), format('{0}-connection-AzureOpenAI', variables('workspaceName')))]",
       "properties": {
         "category": "AzureOpenAI",
-        "target": "[reference(resourceId('Microsoft.CognitiveServices/accounts', variables('aiServicesName')), '2021-10-01').endpoint]",
+        "target": "[format('https://{0}.cognitiveservices.azure.com/', variables('aiServicesName'))]",
         "authType": "AAD",
         "isSharedToAll": true,
         "metadata": {
@@ -930,7 +930,7 @@
     {
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2022-04-01",
-      "name": "[guid(variables('searchServiceName'), variables('roleDefinitions').searchIndexDataContributor, reference(resourceId('Microsoft.CognitiveServices/accounts', variables('aiServicesName')), '2021-10-01', 'full').identity.principalId)]",
+      "name": "[guid(concat(variables('searchServiceName'), '-aiservices-contributor'))]",
       "scope": "[resourceId('Microsoft.Search/searchServices', variables('searchServiceName'))]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitions').searchIndexDataContributor)]",
@@ -945,7 +945,7 @@
     {
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2022-04-01",
-      "name": "[guid(variables('searchServiceName'), variables('roleDefinitions').searchIndexDataReader, reference(resourceId('Microsoft.CognitiveServices/accounts', variables('aiServicesName')), '2021-10-01', 'full').identity.principalId)]",
+      "name": "[guid(concat(variables('searchServiceName'), '-aiservices-reader'))]",
       "scope": "[resourceId('Microsoft.Search/searchServices', variables('searchServiceName'))]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitions').searchIndexDataReader)]",
@@ -960,7 +960,7 @@
     {
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2022-04-01",
-      "name": "[guid(variables('searchServiceName'), variables('roleDefinitions').searchServicesContributor, reference(resourceId('Microsoft.CognitiveServices/accounts', variables('aiServicesName')), '2021-10-01', 'full').identity.principalId)]",
+      "name": "[guid(concat(variables('searchServiceName'), '-aiservices-searchcontrib'))]",
       "scope": "[resourceId('Microsoft.Search/searchServices', variables('searchServiceName'))]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitions').searchServicesContributor)]",
@@ -975,7 +975,7 @@
     {
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2022-04-01",
-      "name": "[guid(variables('aiServicesName'), variables('roleDefinitions').cognitiveServicesContributor, reference(resourceId('Microsoft.Search/searchServices', variables('searchServiceName')), '2023-11-01', 'full').identity.principalId)]",
+      "name": "[guid(concat(variables('aiServicesName'), '-search-contrib'))]",
       "scope": "[resourceId('Microsoft.CognitiveServices/accounts', variables('aiServicesName'))]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitions').cognitiveServicesContributor)]",
@@ -990,7 +990,7 @@
     {
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2022-04-01",
-      "name": "[guid(variables('aiServicesName'), variables('roleDefinitions').cognitiveServicesOpenAIContributor, reference(resourceId('Microsoft.Search/searchServices', variables('searchServiceName')), '2023-11-01', 'full').identity.principalId)]",
+      "name": "[guid(concat(variables('aiServicesName'), '-search-openai'))]",
       "scope": "[resourceId('Microsoft.CognitiveServices/accounts', variables('aiServicesName'))]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitions').cognitiveServicesOpenAIContributor)]",
@@ -1005,7 +1005,7 @@
     {
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2022-04-01",
-      "name": "[guid(variables('storageAccountName'), variables('roleDefinitions').storageBlobDataContributor, reference(resourceId('Microsoft.Search/searchServices', variables('searchServiceName')), '2023-11-01', 'full').identity.principalId)]",
+      "name": "[guid(concat(variables('storageAccountName'), '-search-blob'))]",
       "scope": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitions').storageBlobDataContributor)]",
@@ -1020,7 +1020,7 @@
     {
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2022-04-01",
-      "name": "[guid(variables('storageAccountName'), variables('roleDefinitions').storageBlobDataContributor, reference(resourceId('Microsoft.CognitiveServices/accounts', variables('aiServicesName')), '2021-10-01', 'full').identity.principalId)]",
+      "name": "[guid(concat(variables('storageAccountName'), '-aiservices-blob'))]",
       "scope": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitions').storageBlobDataContributor)]",
