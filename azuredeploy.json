@@ -154,7 +154,7 @@
         "type": "PrivateEndpoint",
         "destination": {
           "serviceResourceId": "[resourceId('Microsoft.Search/searchServices', variables('searchServiceName'))]",
-          "subresourceType": "searchService"
+          "subresourceTarget": "searchService"
         }
       },
       "dependsOn": [
@@ -170,7 +170,7 @@
         "type": "PrivateEndpoint",
         "destination": {
           "serviceResourceId": "[resourceId('Microsoft.CognitiveServices/accounts', variables('aiServicesName'))]",
-          "subresourceType": "account"
+          "subresourceTarget": "account"
         }
       },
       "dependsOn": [
@@ -186,7 +186,7 @@
         "type": "PrivateEndpoint",
         "destination": {
           "serviceResourceId": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
-          "subresourceType": "blob"
+          "subresourceTarget": "blob"
         }
       },
       "dependsOn": [
@@ -202,7 +202,7 @@
         "type": "PrivateEndpoint",
         "destination": {
           "serviceResourceId": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
-          "subresourceType": "file"
+          "subresourceTarget": "file"
         }
       },
       "dependsOn": [
@@ -218,7 +218,7 @@
         "type": "PrivateEndpoint",
         "destination": {
           "serviceResourceId": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
-          "subresourceType": "queue"
+          "subresourceTarget": "queue"
         }
       },
       "dependsOn": [
@@ -234,7 +234,7 @@
         "type": "PrivateEndpoint",
         "destination": {
           "serviceResourceId": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
-          "subresourceType": "table"
+          "subresourceTarget": "table"
         }
       },
       "dependsOn": [
