@@ -179,12 +179,60 @@
     {
       "type": "Microsoft.MachineLearningServices/workspaces/outboundRules",
       "apiVersion": "2024-04-01-preview",
-      "name": "[format('{0}/StorageAccount', variables('workspaceName'))]",
+      "name": "[format('{0}/StorageAccountBlob', variables('workspaceName'))]",
       "properties": {
         "type": "PrivateEndpoint",
         "destination": {
           "serviceResourceId": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
           "subresourceType": "blob"
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.MachineLearningServices/workspaces', variables('workspaceName'))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.MachineLearningServices/workspaces/outboundRules",
+      "apiVersion": "2024-04-01-preview",
+      "name": "[format('{0}/StorageAccountFile', variables('workspaceName'))]",
+      "properties": {
+        "type": "PrivateEndpoint",
+        "destination": {
+          "serviceResourceId": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
+          "subresourceType": "file"
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.MachineLearningServices/workspaces', variables('workspaceName'))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.MachineLearningServices/workspaces/outboundRules",
+      "apiVersion": "2024-04-01-preview",
+      "name": "[format('{0}/StorageAccountQueue', variables('workspaceName'))]",
+      "properties": {
+        "type": "PrivateEndpoint",
+        "destination": {
+          "serviceResourceId": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
+          "subresourceType": "queue"
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.MachineLearningServices/workspaces', variables('workspaceName'))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.MachineLearningServices/workspaces/outboundRules",
+      "apiVersion": "2024-04-01-preview",
+      "name": "[format('{0}/StorageAccountTable', variables('workspaceName'))]",
+      "properties": {
+        "type": "PrivateEndpoint",
+        "destination": {
+          "serviceResourceId": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
+          "subresourceType": "table"
         }
       },
       "dependsOn": [
