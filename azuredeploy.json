@@ -794,7 +794,7 @@
     {
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2022-04-01",
-      "name": "[guid(variables('searchServiceName'), variables('roleDefinitions').searchServicesContributor, variables('userPrincipalId'))]",
+      "name": "[guid(variables('searchServiceName'), variables('roleDefinitions').searchServicesContributor, parameters('userPrincipalId'))]",
       "scope": "[resourceId('Microsoft.Search/searchServices', variables('searchServiceName'))]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitions').searchServicesContributor)]",
@@ -808,7 +808,7 @@
     {
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2022-04-01",
-      "name": "[guid(variables('searchServiceName'), variables('roleDefinitions').searchIndexDataContributor, variables('userPrincipalId'))]",
+      "name": "[guid(variables('searchServiceName'), variables('roleDefinitions').searchIndexDataContributor, parameters('userPrincipalId'))]",
       "scope": "[resourceId('Microsoft.Search/searchServices', variables('searchServiceName'))]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitions').searchIndexDataContributor)]",
@@ -822,7 +822,7 @@
     {
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2022-04-01",
-      "name": "[guid(variables('searchServiceName'), variables('roleDefinitions').searchIndexDataReader, variables('userPrincipalId'))]",
+      "name": "[guid(variables('searchServiceName'), variables('roleDefinitions').searchIndexDataReader, parameters('userPrincipalId'))]",
       "scope": "[resourceId('Microsoft.Search/searchServices', variables('searchServiceName'))]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitions').searchIndexDataReader)]",
@@ -836,7 +836,7 @@
     {
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2022-04-01",
-      "name": "[guid(variables('aiServicesName'), variables('roleDefinitions').cognitiveServicesOpenAIContributor, variables('userPrincipalId'))]",
+      "name": "[guid(variables('aiServicesName'), variables('roleDefinitions').cognitiveServicesOpenAIContributor, parameters('userPrincipalId'))]",
       "scope": "[resourceId('Microsoft.CognitiveServices/accounts', variables('aiServicesName'))]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitions').cognitiveServicesOpenAIContributor)]",
@@ -850,7 +850,7 @@
     {
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2022-04-01",
-      "name": "[guid(variables('aiServicesName'), variables('roleDefinitions').cognitiveServicesContributor, variables('userPrincipalId'))]",
+      "name": "[guid(variables('aiServicesName'), variables('roleDefinitions').cognitiveServicesContributor, parameters('userPrincipalId'))]",
       "scope": "[resourceId('Microsoft.CognitiveServices/accounts', variables('aiServicesName'))]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitions').cognitiveServicesContributor)]",
@@ -864,7 +864,7 @@
     {
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2022-04-01",
-      "name": "[guid(variables('aiServicesName'), variables('roleDefinitions').contributor, variables('userPrincipalId'))]",
+      "name": "[guid(variables('aiServicesName'), variables('roleDefinitions').contributor, parameters('userPrincipalId'))]",
       "scope": "[resourceId('Microsoft.CognitiveServices/accounts', variables('aiServicesName'))]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitions').contributor)]",
@@ -878,7 +878,7 @@
     {
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2022-04-01",
-      "name": "[guid(variables('storageAccountName'), variables('roleDefinitions').contributor, variables('userPrincipalId'))]",
+      "name": "[guid(variables('storageAccountName'), variables('roleDefinitions').contributor, parameters('userPrincipalId'))]",
       "scope": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitions').contributor)]",
@@ -892,7 +892,7 @@
     {
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2022-04-01",
-      "name": "[guid(variables('storageAccountName'), variables('roleDefinitions').storageBlobDataContributor, variables('userPrincipalId'))]",
+      "name": "[guid(variables('storageAccountName'), variables('roleDefinitions').storageBlobDataContributor, parameters('userPrincipalId'))]",
       "scope": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitions').storageBlobDataContributor)]",
@@ -906,7 +906,7 @@
     {
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2022-04-01",
-      "name": "[guid(variables('storageAccountName'), variables('roleDefinitions').storageFileDataPrivilegedContributor, variables('userPrincipalId'))]",
+      "name": "[guid(variables('storageAccountName'), variables('roleDefinitions').storageFileDataPrivilegedContributor, parameters('userPrincipalId'))]",
       "scope": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitions').storageFileDataPrivilegedContributor)]",
@@ -920,7 +920,7 @@
     {
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2022-04-01",
-      "name": "[guid(resourceGroup().id, variables('roleDefinitions').contributor, variables('userPrincipalId'))]",
+      "name": "[guid(resourceGroup().id, variables('roleDefinitions').contributor, parameters('userPrincipalId'))]",
       "scope": "[resourceGroup().id]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitions').contributor)]",
