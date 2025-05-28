@@ -241,11 +241,11 @@
           "format": "OpenAI",
           "name": "gpt-4o-mini",
           "version": "2024-07-18"
-        },
-        "scaleSettings": {
-          "scaleType": "Standard",
-          "capacity": 10
         }
+      },
+      "sku": {
+        "name": "Standard",
+        "capacity": 10
       },
       "dependsOn": [
         "[resourceId('Microsoft.CognitiveServices/accounts', variables('aiServicesName'))]"
