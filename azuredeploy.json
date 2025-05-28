@@ -28,6 +28,8 @@
     "uniqueSuffix": "[substring(uniqueString(resourceGroup().id), 0, 5)]",
     "virtualNetworkName": "[format('vnet-{0}', variables('uniqueSuffix'))]",
     "workspaceName": "[format('w-{0}', variables('uniqueSuffix'))]",
+    "azureOpenAIConnectionName": "[format('{0}-connection-AzureOpenAI', variables('workspaceName'))]",
+    "azureAISearchConnectionName": "[format('{0}-connection-AzureAISearch', variables('workspaceName'))]",
     "privateEndpoints": {
       "aiHub": "[format('pe-aihub-{0}', variables('uniqueSuffix'))]",
       "aiServices": "[format('pe-aiservices-{0}', variables('uniqueSuffix'))]",
@@ -246,7 +248,7 @@
     {
       "type": "Microsoft.MachineLearningServices/workspaces/connections",
       "apiVersion": "2024-04-01-preview",
-      "name": "[format('{0}/{1}', variables('workspaceName'), format('{0}-connection-AzureOpenAI', variables('workspaceName')))]",
+      "name": "[format('{0}/{1}', variables('workspaceName'), variables('azureOpenAIConnectionName'))]",
       "properties": {
         "category": "AzureOpenAI",
         "target": "[format('https://{0}.cognitiveservices.azure.com/', variables('aiServicesName'))]",
@@ -265,7 +267,7 @@
     {
       "type": "Microsoft.MachineLearningServices/workspaces/connections",
       "apiVersion": "2024-04-01-preview",
-      "name": "[format('{0}/{1}', variables('workspaceName'), format('{0}-connection-AzureAISearch', variables('workspaceName')))]",
+      "name": "[format('{0}/{1}', variables('workspaceName'), variables('azureAISearchConnectionName'))]",
       "properties": {
         "category": "CognitiveSearch",
         "target": "[format('https://{0}.search.windows.net/', variables('searchServiceName'))]",
