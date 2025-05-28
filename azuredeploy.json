@@ -234,6 +234,7 @@
       },
       "kind": "AIServices",
       "properties": {
+        "customSubDomainName": "[variables('aiServicesName')]",
         "publicNetworkAccess": "Disabled",
         "networkAcls": {
           "defaultAction": "Deny",
@@ -264,7 +265,7 @@
     {
       "type": "Microsoft.MachineLearningServices/workspaces/connections",
       "apiVersion": "2024-04-01-preview",
-      "name": "[format('{0}/{1}', variables('workspaceName'), format('{0}-connection-AzureAISearch', variables('workspaceName')))]",
+      "name": "[format('{0}/{1}', variables('workspaceName'), format('{0}-connection-AzureAISearch', variables('workspaceName'))]",
       "properties": {
         "category": "CognitiveSearch",
         "target": "[format('https://{0}.search.windows.net/', variables('searchServiceName'))]",
