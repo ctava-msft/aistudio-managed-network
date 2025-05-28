@@ -195,38 +195,6 @@
       ]
     },
     {
-      "type": "Microsoft.MachineLearningServices/workspaces/outboundRules",
-      "apiVersion": "2024-04-01-preview",
-      "name": "[format('{0}/StorageAccountQueue', variables('workspaceName'))]",
-      "properties": {
-        "type": "PrivateEndpoint",
-        "destination": {
-          "serviceResourceId": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
-          "subresourceTarget": "queue"
-        }
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.MachineLearningServices/workspaces', variables('workspaceName'))]",
-        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
-      ]
-    },
-    {
-      "type": "Microsoft.MachineLearningServices/workspaces/outboundRules",
-      "apiVersion": "2024-04-01-preview",
-      "name": "[format('{0}/StorageAccountTable', variables('workspaceName'))]",
-      "properties": {
-        "type": "PrivateEndpoint",
-        "destination": {
-          "serviceResourceId": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
-          "subresourceTarget": "table"
-        }
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.MachineLearningServices/workspaces', variables('workspaceName'))]",
-        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
-      ]
-    },
-    {
       "type": "Microsoft.Search/searchServices",
       "apiVersion": "2023-11-01",
       "name": "[variables('searchServiceName')]",
