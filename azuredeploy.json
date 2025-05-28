@@ -921,7 +921,6 @@
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2022-04-01",
       "name": "[guid(resourceGroup().id, variables('roleDefinitions').contributor, parameters('userPrincipalId'))]",
-      "scope": "[resourceGroup().id]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitions').contributor)]",
         "principalId": "[parameters('userPrincipalId')]",
