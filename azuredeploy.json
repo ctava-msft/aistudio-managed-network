@@ -205,22 +205,6 @@
       ]
     },
     {
-      "type": "Microsoft.MachineLearningServices/workspaces/outboundRules",
-      "apiVersion": "2024-04-01-preview",
-      "name": "[format('{0}/AzureKeyVault', variables('workspaceName'))]",
-      "properties": {
-        "type": "PrivateEndpoint",
-        "destination": {
-          "serviceResourceId": "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]",
-          "subresourceTarget": "vault"
-        }
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.MachineLearningServices/workspaces', variables('workspaceName'))]",
-        "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]"
-      ]
-    },
-    {
       "type": "Microsoft.Search/searchServices",
       "apiVersion": "2023-11-01",
       "name": "[variables('searchServiceName')]",
