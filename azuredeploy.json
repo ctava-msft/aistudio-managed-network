@@ -164,44 +164,12 @@
         "storageAccount": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
         "publicNetworkAccess": "Disabled",
         "managedNetwork": {
-          "isolationMode": "AllowOnlyApprovedOutbound"
+          "isolationMode": "AllowInternetOutbound"
         }
       },
       "dependsOn": [
         "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]",
         "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
-      ]
-    },
-    {
-      "type": "Microsoft.MachineLearningServices/workspaces/outboundRules",
-      "apiVersion": "2024-04-01-preview",
-      "name": "[format('{0}/AzureAISearch', variables('workspaceName'))]",
-      "properties": {
-        "type": "PrivateEndpoint",
-        "destination": {
-          "serviceResourceId": "[resourceId('Microsoft.Search/searchServices', variables('searchServiceName'))]",
-          "subresourceTarget": "searchService"
-        }
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.MachineLearningServices/workspaces', variables('workspaceName'))]",
-        "[resourceId('Microsoft.Search/searchServices', variables('searchServiceName'))]"
-      ]
-    },
-    {
-      "type": "Microsoft.MachineLearningServices/workspaces/outboundRules",
-      "apiVersion": "2024-04-01-preview",
-      "name": "[format('{0}/AzureAIServices', variables('workspaceName'))]",
-      "properties": {
-        "type": "PrivateEndpoint",
-        "destination": {
-          "serviceResourceId": "[resourceId('Microsoft.CognitiveServices/accounts', variables('aiServicesName'))]",
-          "subresourceTarget": "account"
-        }
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.MachineLearningServices/workspaces', variables('workspaceName'))]",
-        "[resourceId('Microsoft.CognitiveServices/accounts', variables('aiServicesName'))]"
       ]
     },
     {
