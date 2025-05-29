@@ -28,10 +28,17 @@
       "metadata": {
         "description": "Array of IP addresses or CIDR blocks to allow access to storage and other services"
       }
+    },
+    "deploymentTimestamp": {
+      "type": "string",
+      "defaultValue": "[utcNow()]",
+      "metadata": {
+        "description": "Timestamp for the deployment to ensure unique role assignment names"
+      }
     }
   },
   "variables": {
-    "deploymentTimestamp": "[utcNow()]",
+    "deploymentTimestamp": "[parameters('deploymentTimestamp')]",
     "allowedIpAddresses": "[parameters('allowedIpAddresses')]",
     "aiServicesName": "[format('ais-{0}', variables('uniqueSuffix'))]",
     "keyVaultName": "[format('kv-{0}', variables('uniqueSuffix'))]",
