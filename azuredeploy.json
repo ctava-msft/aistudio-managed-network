@@ -75,6 +75,7 @@
     },
     "roleDefinitions": {
       "cognitiveServicesOpenAIContributor": "a001fd3d-188f-4b5d-821b-7da978bf7442",
+      "cognitiveServicesOpenAIUser": "5e0bd9bd-7b93-4f28-af87-19fc36ad61bd",
       "cognitiveServicesContributor": "25fbc0a9-bd7c-42a3-aa1a-3b75d497ee68",
       "contributor": "b24988ac-6180-42a0-ab88-20f7382dd24c",
       "searchServicesContributor": "7ca78c08-252a-4471-8644-bb5ff32d4ba0",
@@ -867,6 +868,21 @@
       },
       "dependsOn": [
         "[resourceId('Microsoft.Search/searchServices', variables('searchServiceName'))]"
+      ]
+    },
+    {
+      "condition": "[not(parameters('skipRoleAssignments'))]",
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "name": "[guid(variables('aiServicesName'), variables('roleDefinitions').cognitiveServicesOpenAIUser, parameters('userPrincipalId'), variables('roleAssignmentSuffix'))]",
+      "scope": "[resourceId('Microsoft.CognitiveServices/accounts', variables('aiServicesName'))]",
+      "properties": {
+        "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitions').cognitiveServicesOpenAIUser)]",
+        "principalId": "[parameters('userPrincipalId')]",
+        "principalType": "User"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.CognitiveServices/accounts', variables('aiServicesName'))]"
       ]
     },
     {
