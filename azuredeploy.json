@@ -283,6 +283,78 @@
       ]
     },
     {
+      "type": "Microsoft.MachineLearningServices/workspaces/outboundRules",
+      "apiVersion": "2024-04-01-preview",
+      "name": "[format('{0}/search-outbound', variables('workspaceName'))]",
+      "properties": {
+        "type": "PrivateEndpoint",
+        "destination": {
+          "serviceResourceId": "[resourceId('Microsoft.Search/searchServices', variables('searchServiceName'))]",
+          "subresourceTarget": "searchService",
+          "sparkEnabled": false
+        },
+        "category": "UserDefined"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.MachineLearningServices/workspaces', variables('workspaceName'))]",
+        "[resourceId('Microsoft.Search/searchServices', variables('searchServiceName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.MachineLearningServices/workspaces/outboundRules",
+      "apiVersion": "2024-04-01-preview",
+      "name": "[format('{0}/aiservices-outbound', variables('workspaceName'))]",
+      "properties": {
+        "type": "PrivateEndpoint",
+        "destination": {
+          "serviceResourceId": "[resourceId('Microsoft.CognitiveServices/accounts', variables('aiServicesName'))]",
+          "subresourceTarget": "account",
+          "sparkEnabled": false
+        },
+        "category": "UserDefined"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.MachineLearningServices/workspaces', variables('workspaceName'))]",
+        "[resourceId('Microsoft.CognitiveServices/accounts', variables('aiServicesName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.MachineLearningServices/workspaces/outboundRules",
+      "apiVersion": "2024-04-01-preview",
+      "name": "[format('{0}/storage-blob-outbound', variables('workspaceName'))]",
+      "properties": {
+        "type": "PrivateEndpoint",
+        "destination": {
+          "serviceResourceId": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
+          "subresourceTarget": "blob",
+          "sparkEnabled": false
+        },
+        "category": "UserDefined"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.MachineLearningServices/workspaces', variables('workspaceName'))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.MachineLearningServices/workspaces/outboundRules",
+      "apiVersion": "2024-04-01-preview",
+      "name": "[format('{0}/storage-file-outbound', variables('workspaceName'))]",
+      "properties": {
+        "type": "PrivateEndpoint",
+        "destination": {
+          "serviceResourceId": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
+          "subresourceTarget": "file",
+          "sparkEnabled": false
+        },
+        "category": "UserDefined"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.MachineLearningServices/workspaces', variables('workspaceName'))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+      ]
+    },
+    {
       "type": "Microsoft.Network/virtualNetworks",
       "apiVersion": "2023-04-01",
       "name": "[variables('virtualNetworkName')]",
