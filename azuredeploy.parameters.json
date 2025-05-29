@@ -4,6 +4,15 @@
     "parameters": {
         "userPrincipalId": {
             "value": ""
+        },
+        "deploymentTimestamp": {
+            "value": "[utcNow()]"
+        },
+        "skipRoleAssignments": {
+            "value": true
+        },
+        "allowedIpAddresses": {
+            "value": ["redacted"]
         }
     }
 }
