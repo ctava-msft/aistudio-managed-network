@@ -15,13 +15,6 @@
         "description": "The principal ID of the user to assign roles to"
       }
     },
-    "deploymentTimestamp": {
-      "type": "string",
-      "defaultValue": "[utcNow()]",
-      "metadata": {
-        "description": "Timestamp to ensure unique role assignment names"
-      }
-    },
     "skipRoleAssignments": {
       "type": "bool",
       "defaultValue": true,
@@ -38,6 +31,7 @@
     }
   },
   "variables": {
+    "deploymentTimestamp": "[utcNow()]",
     "allowedIpAddresses": "[parameters('allowedIpAddresses')]",
     "aiServicesName": "[format('ais-{0}', variables('uniqueSuffix'))]",
     "keyVaultName": "[format('kv-{0}', variables('uniqueSuffix'))]",
@@ -83,7 +77,7 @@
       "storageFileDataPrivilegedContributor": "69566ab7-960f-475b-8e7c-b3118f30c6bd",
       "azureMLDataScientist": "f6c7c914-8db3-469d-8ca1-694a8f32e121"
     },
-    "deploymentSuffix": "[substring(replace(replace(parameters('deploymentTimestamp'), ':', ''), '-', ''), 0, 8)]",
+    "deploymentSuffix": "[substring(replace(replace(variables('deploymentTimestamp'), ':', ''), '-', ''), 0, 8)]",
     "roleAssignmentSuffix": "[concat(variables('uniqueSuffix'), variables('deploymentSuffix'))]"
   },
   "resources": [

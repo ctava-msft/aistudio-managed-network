@@ -5,9 +5,6 @@
         "userPrincipalId": {
             "value": ""
         },
-        "deploymentTimestamp": {
-            "value": "[utcNow()]"
-        },
         "skipRoleAssignments": {
             "value": true
         },
