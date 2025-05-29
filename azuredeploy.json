@@ -252,7 +252,7 @@
         "networkAcls": {
           "defaultAction": "Deny",
           "bypass": "AzureServices",
-          "ipRules": "[if(greater(length(variables('allowedIpAddresses')), 0), variables('allowedIpAddresses'), createArray())]"
+          "ipRules": "[if(greater(length(variables('allowedIpAddresses')), 0), map(variables('allowedIpAddresses'), lambda('ip', createObject('value', lambdaVariables('ip')))), createArray())]"
         }
       }
     },
