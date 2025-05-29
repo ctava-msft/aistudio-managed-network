@@ -162,9 +162,9 @@
         "friendlyName": "[variables('workspaceName')]",
         "keyVault": "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]",
         "storageAccount": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
-        "publicNetworkAccess": "Enabled",
+        "publicNetworkAccess": "Disabled",
         "managedNetwork": {
-          "isolationMode": "AllowInternetOutbound"
+          "isolationMode": "AllowOnlyApprovedOutbound"
         }
       },
       "dependsOn": [
@@ -202,6 +202,38 @@
       "dependsOn": [
         "[resourceId('Microsoft.MachineLearningServices/workspaces', variables('workspaceName'))]",
         "[resourceId('Microsoft.CognitiveServices/accounts', variables('aiServicesName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.MachineLearningServices/workspaces/outboundRules",
+      "apiVersion": "2024-04-01-preview",
+      "name": "[format('{0}/AzureStorage', variables('workspaceName'))]",
+      "properties": {
+        "type": "PrivateEndpoint",
+        "destination": {
+          "serviceResourceId": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
+          "subresourceTarget": "blob"
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.MachineLearningServices/workspaces', variables('workspaceName'))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.MachineLearningServices/workspaces/outboundRules",
+      "apiVersion": "2024-04-01-preview",
+      "name": "[format('{0}/AzureKeyVault', variables('workspaceName'))]",
+      "properties": {
+        "type": "PrivateEndpoint",
+        "destination": {
+          "serviceResourceId": "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]",
+          "subresourceTarget": "vault"
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.MachineLearningServices/workspaces', variables('workspaceName'))]",
+        "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]"
       ]
     },
     {
