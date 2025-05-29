@@ -53,7 +53,7 @@
     "projectName": "[format('p-{0}', variables('uniqueSuffix'))]",
     "azureOpenAIConnectionName": "[format('{0}-connection-AzureOpenAI', variables('workspaceName'))]",
     "azureAISearchConnectionName": "[format('{0}-connection-AzureAISearch', variables('workspaceName'))]",
-    "gpt4oMiniDeploymentName": "gpt-4o-mini",
+    "gptDeploymentName": "gpt-4o-mini",
     "privateEndpoints": {
       "aiHub": "[format('pe-aihub-{0}', variables('uniqueSuffix'))]",
       "aiServices": "[format('pe-aiservices-{0}', variables('uniqueSuffix'))]",
@@ -259,7 +259,7 @@
     {
       "type": "Microsoft.CognitiveServices/accounts/deployments",
       "apiVersion": "2023-05-01",
-      "name": "[format('{0}/{1}', variables('aiServicesName'), variables('gpt4oMiniDeploymentName'))]",
+      "name": "[format('{0}/{1}', variables('aiServicesName'), variables('gptDeploymentName'))]",
       "properties": {
         "model": {
           "format": "OpenAI",
@@ -1188,9 +1188,9 @@
       "type": "string",
       "value": "[variables('keyVaultName')]"
     },
-    "gpt4oMiniDeploymentName": {
+    "gptDeploymentName": {
       "type": "string",
-      "value": "[variables('gpt4oMiniDeploymentName')]"
+      "value": "[variables('gptDeploymentName')]"
     }
   }
 }
