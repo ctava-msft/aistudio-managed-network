@@ -21,6 +21,13 @@
       "metadata": {
         "description": "Timestamp to ensure unique role assignment names"
       }
+    },
+    "skipRoleAssignments": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "Skip creating role assignments if they already exist"
+      }
     }
   },
   "variables": {
@@ -69,7 +76,8 @@
       "storageFileDataPrivilegedContributor": "69566ab7-960f-475b-8e7c-b3118f30c6bd",
       "azureMLDataScientist": "f6c7c914-8db3-469d-8ca1-694a8f32e121"
     },
-    "deploymentSuffix": "[substring(replace(parameters('deploymentTimestamp'), ':', ''), 0, 8)]"
+    "deploymentSuffix": "[substring(replace(replace(parameters('deploymentTimestamp'), ':', ''), '-', ''), 0, 8)]",
+    "roleAssignmentSuffix": "[concat(variables('uniqueSuffix'), variables('deploymentSuffix'))]"
   },
   "resources": [
     {
@@ -809,9 +817,10 @@
       ]
     },
     {
+      "condition": "[not(parameters('skipRoleAssignments'))]",
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2022-04-01",
-      "name": "[guid(variables('searchServiceName'), variables('roleDefinitions').searchServicesContributor, parameters('userPrincipalId'), variables('deploymentSuffix'))]",
+      "name": "[guid(variables('searchServiceName'), variables('roleDefinitions').searchServicesContributor, parameters('userPrincipalId'), variables('roleAssignmentSuffix'))]",
       "scope": "[resourceId('Microsoft.Search/searchServices', variables('searchServiceName'))]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitions').searchServicesContributor)]",
@@ -823,9 +832,10 @@
       ]
     },
     {
+      "condition": "[not(parameters('skipRoleAssignments'))]",
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2022-04-01",
-      "name": "[guid(variables('searchServiceName'), variables('roleDefinitions').searchIndexDataContributor, parameters('userPrincipalId'), variables('deploymentSuffix'))]",
+      "name": "[guid(variables('searchServiceName'), variables('roleDefinitions').searchIndexDataContributor, parameters('userPrincipalId'), variables('roleAssignmentSuffix'))]",
       "scope": "[resourceId('Microsoft.Search/searchServices', variables('searchServiceName'))]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitions').searchIndexDataContributor)]",
@@ -837,9 +847,10 @@
       ]
     },
     {
+      "condition": "[not(parameters('skipRoleAssignments'))]",
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2022-04-01",
-      "name": "[guid(variables('searchServiceName'), variables('roleDefinitions').searchIndexDataReader, parameters('userPrincipalId'), variables('deploymentSuffix'))]",
+      "name": "[guid(variables('searchServiceName'), variables('roleDefinitions').searchIndexDataReader, parameters('userPrincipalId'), variables('roleAssignmentSuffix'))]",
       "scope": "[resourceId('Microsoft.Search/searchServices', variables('searchServiceName'))]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitions').searchIndexDataReader)]",
@@ -851,9 +862,10 @@
       ]
     },
     {
+      "condition": "[not(parameters('skipRoleAssignments'))]",
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2022-04-01",
-      "name": "[guid(variables('aiServicesName'), variables('roleDefinitions').cognitiveServicesOpenAIContributor, parameters('userPrincipalId'), variables('deploymentSuffix'))]",
+      "name": "[guid(variables('aiServicesName'), variables('roleDefinitions').cognitiveServicesOpenAIContributor, parameters('userPrincipalId'), variables('roleAssignmentSuffix'))]",
       "scope": "[resourceId('Microsoft.CognitiveServices/accounts', variables('aiServicesName'))]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitions').cognitiveServicesOpenAIContributor)]",
@@ -865,9 +877,10 @@
       ]
     },
     {
+      "condition": "[not(parameters('skipRoleAssignments'))]",
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2022-04-01",
-      "name": "[guid(variables('aiServicesName'), variables('roleDefinitions').cognitiveServicesContributor, parameters('userPrincipalId'), variables('deploymentSuffix'))]",
+      "name": "[guid(variables('aiServicesName'), variables('roleDefinitions').cognitiveServicesContributor, parameters('userPrincipalId'), variables('roleAssignmentSuffix'))]",
       "scope": "[resourceId('Microsoft.CognitiveServices/accounts', variables('aiServicesName'))]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitions').cognitiveServicesContributor)]",
@@ -879,9 +892,10 @@
       ]
     },
     {
+      "condition": "[not(parameters('skipRoleAssignments'))]",
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2022-04-01",
-      "name": "[guid(variables('aiServicesName'), variables('roleDefinitions').contributor, parameters('userPrincipalId'), variables('deploymentSuffix'))]",
+      "name": "[guid(variables('aiServicesName'), variables('roleDefinitions').contributor, parameters('userPrincipalId'), variables('roleAssignmentSuffix'))]",
       "scope": "[resourceId('Microsoft.CognitiveServices/accounts', variables('aiServicesName'))]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitions').contributor)]",
@@ -893,9 +907,10 @@
       ]
     },
     {
+      "condition": "[not(parameters('skipRoleAssignments'))]",
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2022-04-01",
-      "name": "[guid(variables('storageAccountName'), variables('roleDefinitions').contributor, parameters('userPrincipalId'), variables('deploymentSuffix'))]",
+      "name": "[guid(variables('storageAccountName'), variables('roleDefinitions').contributor, parameters('userPrincipalId'), variables('roleAssignmentSuffix'))]",
       "scope": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitions').contributor)]",
@@ -907,9 +922,10 @@
       ]
     },
     {
+      "condition": "[not(parameters('skipRoleAssignments'))]",
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2022-04-01",
-      "name": "[guid(variables('storageAccountName'), variables('roleDefinitions').storageBlobDataContributor, parameters('userPrincipalId'), variables('deploymentSuffix'))]",
+      "name": "[guid(variables('storageAccountName'), variables('roleDefinitions').storageBlobDataContributor, parameters('userPrincipalId'), variables('roleAssignmentSuffix'))]",
       "scope": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitions').storageBlobDataContributor)]",
@@ -921,9 +937,10 @@
       ]
     },
     {
+      "condition": "[not(parameters('skipRoleAssignments'))]",
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2022-04-01",
-      "name": "[guid(variables('storageAccountName'), variables('roleDefinitions').storageFileDataPrivilegedContributor, parameters('userPrincipalId'), variables('deploymentSuffix'))]",
+      "name": "[guid(variables('storageAccountName'), variables('roleDefinitions').storageFileDataPrivilegedContributor, parameters('userPrincipalId'), variables('roleAssignmentSuffix'))]",
       "scope": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitions').storageFileDataPrivilegedContributor)]",
@@ -935,9 +952,10 @@
       ]
     },
     {
+      "condition": "[not(parameters('skipRoleAssignments'))]",
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2022-04-01",
-      "name": "[guid(resourceGroup().id, variables('roleDefinitions').contributor, parameters('userPrincipalId'), variables('deploymentSuffix'))]",
+      "name": "[guid(resourceGroup().id, variables('roleDefinitions').contributor, parameters('userPrincipalId'), variables('roleAssignmentSuffix'))]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitions').contributor)]",
         "principalId": "[parameters('userPrincipalId')]",
@@ -945,9 +963,10 @@
       }
     },
     {
+      "condition": "[not(parameters('skipRoleAssignments'))]",
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2022-04-01",
-      "name": "[guid(concat(variables('searchServiceName'), '-aiservices-contributor-', variables('deploymentSuffix')))]",
+      "name": "[guid(concat(variables('searchServiceName'), '-aiservices-contributor-', variables('roleAssignmentSuffix')))]",
       "scope": "[resourceId('Microsoft.Search/searchServices', variables('searchServiceName'))]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitions').searchIndexDataContributor)]",
@@ -960,9 +979,10 @@
       ]
     },
     {
+      "condition": "[not(parameters('skipRoleAssignments'))]",
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2022-04-01",
-      "name": "[guid(concat(variables('searchServiceName'), '-aiservices-reader-', variables('deploymentSuffix')))]",
+      "name": "[guid(concat(variables('searchServiceName'), '-aiservices-reader-', variables('roleAssignmentSuffix')))]",
       "scope": "[resourceId('Microsoft.Search/searchServices', variables('searchServiceName'))]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitions').searchIndexDataReader)]",
@@ -975,9 +995,10 @@
       ]
     },
     {
+      "condition": "[not(parameters('skipRoleAssignments'))]",
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2022-04-01",
-      "name": "[guid(concat(variables('searchServiceName'), '-aiservices-searchcontrib-', variables('deploymentSuffix')))]",
+      "name": "[guid(concat(variables('searchServiceName'), '-aiservices-searchcontrib-', variables('roleAssignmentSuffix')))]",
       "scope": "[resourceId('Microsoft.Search/searchServices', variables('searchServiceName'))]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitions').searchServicesContributor)]",
@@ -990,9 +1011,10 @@
       ]
     },
     {
+      "condition": "[not(parameters('skipRoleAssignments'))]",
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2022-04-01",
-      "name": "[guid(concat(variables('aiServicesName'), '-search-contrib-', variables('deploymentSuffix')))]",
+      "name": "[guid(concat(variables('aiServicesName'), '-search-contrib-', variables('roleAssignmentSuffix')))]",
       "scope": "[resourceId('Microsoft.CognitiveServices/accounts', variables('aiServicesName'))]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitions').cognitiveServicesContributor)]",
@@ -1005,9 +1027,10 @@
       ]
     },
     {
+      "condition": "[not(parameters('skipRoleAssignments'))]",
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2022-04-01",
-      "name": "[guid(concat(variables('aiServicesName'), '-search-openai-', variables('deploymentSuffix')))]",
+      "name": "[guid(concat(variables('aiServicesName'), '-search-openai-', variables('roleAssignmentSuffix')))]",
       "scope": "[resourceId('Microsoft.CognitiveServices/accounts', variables('aiServicesName'))]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitions').cognitiveServicesOpenAIContributor)]",
@@ -1020,9 +1043,10 @@
       ]
     },
     {
+      "condition": "[not(parameters('skipRoleAssignments'))]",
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2022-04-01",
-      "name": "[guid(concat(variables('storageAccountName'), '-search-blob-', variables('deploymentSuffix')))]",
+      "name": "[guid(concat(variables('storageAccountName'), '-search-blob-', variables('roleAssignmentSuffix')))]",
       "scope": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitions').storageBlobDataContributor)]",
@@ -1035,9 +1059,10 @@
       ]
     },
     {
+      "condition": "[not(parameters('skipRoleAssignments'))]",
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2022-04-01",
-      "name": "[guid(concat(variables('storageAccountName'), '-aiservices-blob-', variables('deploymentSuffix')))]",
+      "name": "[guid(concat(variables('storageAccountName'), '-aiservices-blob-', variables('roleAssignmentSuffix')))]",
       "scope": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitions').storageBlobDataContributor)]",
@@ -1050,9 +1075,10 @@
       ]
     },
     {
+      "condition": "[not(parameters('skipRoleAssignments'))]",
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2022-04-01",
-      "name": "[guid(concat(variables('storageAccountName'), '-workspace-blob-', variables('deploymentSuffix')))]",
+      "name": "[guid(concat(variables('storageAccountName'), '-workspace-blob-', variables('roleAssignmentSuffix')))]",
       "scope": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitions').storageBlobDataContributor)]",
@@ -1065,9 +1091,10 @@
       ]
     },
     {
+      "condition": "[not(parameters('skipRoleAssignments'))]",
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2022-04-01",
-      "name": "[guid(concat(variables('storageAccountName'), '-workspace-file-', variables('deploymentSuffix')))]",
+      "name": "[guid(concat(variables('storageAccountName'), '-workspace-file-', variables('roleAssignmentSuffix')))]",
       "scope": "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitions').storageFileDataPrivilegedContributor)]",
@@ -1098,9 +1125,10 @@
       ]
     },
     {
+      "condition": "[not(parameters('skipRoleAssignments'))]",
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2022-04-01",
-      "name": "[guid(variables('projectName'), variables('roleDefinitions').azureMLDataScientist, parameters('userPrincipalId'), variables('deploymentSuffix'))]",
+      "name": "[guid(variables('projectName'), variables('roleDefinitions').azureMLDataScientist, parameters('userPrincipalId'), variables('roleAssignmentSuffix'))]",
       "scope": "[resourceId('Microsoft.MachineLearningServices/workspaces', variables('projectName'))]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitions').azureMLDataScientist)]",
@@ -1112,9 +1140,10 @@
       ]
     },
     {
+      "condition": "[not(parameters('skipRoleAssignments'))]",
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2022-04-01",
-      "name": "[guid(variables('projectName'), variables('roleDefinitions').contributor, parameters('userPrincipalId'), variables('deploymentSuffix'))]",
+      "name": "[guid(variables('projectName'), variables('roleDefinitions').contributor, parameters('userPrincipalId'), variables('roleAssignmentSuffix'))]",
       "scope": "[resourceId('Microsoft.MachineLearningServices/workspaces', variables('projectName'))]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleDefinitions').contributor)]",
